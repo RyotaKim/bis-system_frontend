@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/" />
+  <title>BIS System</title>
+  <meta name="theme-color" content="#000000">
+
+  <!-- Styles to ensure full-height Flutter root -->
+  <style>
+    html, body { height:100%; margin:0; padding:0; }
+    flt-glass-pane, flt-platform-view, #flutter-root { height:100% !important; width:100% !important; display:flex !important; flex-direction:column !important; }
+    .fill-parent, .request-content, .requests-wrapper, .requests-list, .main-content, .content { flex:1 1 auto !important; width:100% !important; box-sizing:border-box !important; min-width:0; }
+  </style>
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="frontend_bis">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="manifest" href="manifest.json">
+
+  <script>
+    // Normalize service worker token produced by flutter build; keep null if not replaced.
+    var serviceWorkerVersion = "{{flutter_service_worker_version}}";
+    if (serviceWorkerVersion === "{{flutter_service_worker_version}}" || serviceWorkerVersion === "") {
+      serviceWorkerVersion = null;
+    }
+  </script>
+
+  <!-- Load the Flutter loader; keep deferred so it doesn't block DOM parsing -->
+  <script src="flutter.js" defer></script>
+
+  <!-- Removed direct main.dart.js include: loader will fetch it at runtime -->
+</head>
+<body>
+  <script>
+    // Run loader after window load so DOM is ready and flutter.js has executed.
+    window.addEventListener('load', function () {
+      if (typeof _flutter === 'undefined' || !_flutter.loader) {
+        console.error('Flutter loader is not available.');
+        return;
+      }
+
+      // Use loadEntrypoint so the loader fetches the app script (main.dart.js) itself.
+      _flutter.loader.loadEntrypoint({
+        entrypointUrl: "main.dart.js",
+        serviceWorker: { serviceWorkerVersion: serviceWorkerVersion }
+      }).then(function(engineInitializer) {
+        return engineInitializer.initializeEngine();
+      }).then(function(appRunner) {
+        appRunner.runApp();
+      }).catch(function(err) {
+        console.error('Flutter load/init error:', err);
+      });
+    });
+  </script>
+</body>
+</html>
