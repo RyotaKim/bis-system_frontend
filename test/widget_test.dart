@@ -12,7 +12,7 @@ import 'package:frontend_bis/main.dart';
 void main() {
   testWidgets('BIS App loads correctly', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const BISApp());
+    await tester.pumpWidget(const MyApp());
 
     // Verify that our app loads with the correct title
     expect(find.text('Welcome to BIS System'), findsOneWidget);

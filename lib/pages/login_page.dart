@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
+import '../services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,8 +13,16 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
@@ -21,29 +30,38 @@ class _LoginPageState extends State<LoginPage> {
         _isLoading = true;
       });
 
-      // Simulate login process
-      await Future.delayed(const Duration(seconds: 2));
+      try {
+        // Call API authentication
+        await _authService.login(
+          _usernameController.text.trim(),
+          _passwordController.text,
+        );
 
-      // Simple validation (replace with actual authentication)
-      if (_usernameController.text == 'admin' && _passwordController.text == 'admin123') {
+        if (!mounted) return;
+
         // Navigate to HomePage on successful login
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
         );
-      } else {
+      } catch (e) {
+        if (!mounted) return;
+
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid username or password'),
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
-
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -53,7 +71,8 @@ class _LoginPageState extends State<LoginPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Forgot Password'),
-          content: const Text('Please contact your administrator to reset your password.'),
+          content: const Text(
+              'Please contact your administrator to reset your password.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -154,7 +173,7 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const SizedBox(height: 20),
-                        
+
                         // Green login container
                         Container(
                           width: 400,
@@ -209,18 +228,23 @@ class _LoginPageState extends State<LoginPage> {
                                         filled: true,
                                         fillColor: Colors.white,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(8)),
                                           borderSide: BorderSide.none,
                                         ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(8)),
                                           borderSide: BorderSide.none,
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                                          borderSide: BorderSide(color: Colors.blue, width: 2),
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(8)),
+                                          borderSide: BorderSide(
+                                              color: Colors.blue, width: 2),
                                         ),
-                                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 12),
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
@@ -232,7 +256,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ],
                                 ),
                                 const SizedBox(height: 20),
-                                
+
                                 // Password Field
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,18 +281,24 @@ class _LoginPageState extends State<LoginPage> {
                                         filled: true,
                                         fillColor: Colors.white,
                                         border: const OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(8)),
                                           borderSide: BorderSide.none,
                                         ),
                                         enabledBorder: const OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(8)),
                                           borderSide: BorderSide.none,
                                         ),
                                         focusedBorder: const OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                                          borderSide: BorderSide(color: Colors.blue, width: 2),
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(8)),
+                                          borderSide: BorderSide(
+                                              color: Colors.blue, width: 2),
                                         ),
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 12),
                                         suffixIcon: IconButton(
                                           icon: Icon(
                                             _isPasswordVisible
@@ -277,7 +307,8 @@ class _LoginPageState extends State<LoginPage> {
                                           ),
                                           onPressed: () {
                                             setState(() {
-                                              _isPasswordVisible = !_isPasswordVisible;
+                                              _isPasswordVisible =
+                                                  !_isPasswordVisible;
                                             });
                                           },
                                         ),
@@ -292,7 +323,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ],
                                 ),
                                 const SizedBox(height: 8),
-                                
+
                                 // Forgot Password Link
                                 Align(
                                   alignment: Alignment.centerRight,
@@ -309,7 +340,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 20),
-                                
+
                                 // Login Button
                                 SizedBox(
                                   width: double.infinity,
@@ -334,7 +365,9 @@ class _LoginPageState extends State<LoginPage> {
                                           )
                                         : const Text(
                                             'Login',
-                                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                   ),
                                 ),
@@ -353,12 +386,5 @@ class _LoginPageState extends State<LoginPage> {
       ),
       backgroundColor: Colors.green.shade300,
     );
-  }
-
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
   }
 }

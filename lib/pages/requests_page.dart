@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart'; // added for kDebugMode
 
 class RequestsPage extends StatefulWidget {
   const RequestsPage({super.key});
@@ -28,48 +27,9 @@ class _RequestsPageState extends State<RequestsPage> {
     // Wrap the existing content in a Scaffold to provide app chrome and navigation.
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Requests'),
         backgroundColor: Colors.green,
-        actions: [
-          // Debug-only info button to explain the DevTools messages shown during hot-reload/hot-restart.
-          if (kDebugMode)
-            IconButton(
-              tooltip: 'DevTools info',
-              icon: const Icon(Icons.info_outline, color: Colors.yellow),
-              onPressed: () {
-                showDialog<void>(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: const Text('DevTools / VM service info'),
-                      content: const Text(
-                        'The development console messages about DevTools / VM service are emitted by Flutter tooling. '
-                        'They indicate the debugger/DevTools deep-link was not set in this session and are usually '
-                        'benign for web builds or certain runtime configurations. '
-                        'If you need deep links for DevTools, run the app with a supported debug configuration or '
-                        'use flutter run with proper VM service enabled.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('OK'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-            ),
-
-          IconButton(
-            tooltip: 'Home',
-            icon: const Icon(Icons.home),
-            onPressed: () {
-              // Navigate to the resident main page (adjust route if different)
-              Navigator.pushNamed(context, '/');
-            },
-          ),
-        ],
       ),
       body: Padding(
         // ...existing code...
@@ -186,6 +146,7 @@ class _RequestsPageState extends State<RequestsPage> {
                       DataColumn(label: Text('REFERENCE NUMBER')),
                       DataColumn(label: Text('RESIDENT NAME')),
                       DataColumn(label: Text('REQUEST TYPE')),
+                      DataColumn(label: Text('DATE')),
                       DataColumn(label: Text('STATUS')),
                       DataColumn(label: Text('ACTIONS')),
                     ],
@@ -194,18 +155,25 @@ class _RequestsPageState extends State<RequestsPage> {
                         '2023-000012',
                         'Jules Santo Reyes',
                         'Barangay Clearance',
+                        DateTime.now()
+                            .subtract(const Duration(days: 3))
+                            .toIso8601String(),
                         'PENDING',
                       ),
                       _buildRequestRow(
                         '2024-000001',
                         'Ashley Prieto',
                         'Certificate of Indigency',
+                        DateTime.now()
+                            .subtract(const Duration(days: 30))
+                            .toIso8601String(),
                         'APPROVED',
                       ),
                       _buildRequestRow(
                         '2024-000002',
                         'Mark Abilug',
                         'Business Permit',
+                        DateTime.now().toIso8601String(),
                         'RELEASED',
                       ),
                     ],
@@ -223,6 +191,7 @@ class _RequestsPageState extends State<RequestsPage> {
     String refNumber,
     String name,
     String type,
+    String isoDate,
     String status,
   ) {
     Color statusColor;
@@ -240,11 +209,16 @@ class _RequestsPageState extends State<RequestsPage> {
         statusColor = Colors.grey;
     }
 
+    final formattedDate = isoDate.isNotEmpty
+        ? DateTime.parse(isoDate).toLocal().toString().split('.').first
+        : 'Unknown';
+
     return DataRow(
       cells: [
         DataCell(Text(refNumber)),
         DataCell(Text(name)),
         DataCell(Text(type)),
+        DataCell(Text(formattedDate)),
         DataCell(
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -262,15 +236,15 @@ class _RequestsPageState extends State<RequestsPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: const Icon(Icons.visibility, color: Colors.green),
+              icon: const Icon(Icons.visibility, color: Color.fromARGB(24, 228, 223, 223)),
               onPressed: () {},
             ),
             IconButton(
-              icon: const Icon(Icons.edit, color: Colors.green),
+              icon: const Icon(Icons.edit, color: Color.fromARGB(24, 228, 223, 223)),
               onPressed: () {},
             ),
             IconButton(
-              icon: const Icon(Icons.download, color: Colors.green),
+              icon: const Icon(Icons.delete, color: Color.fromARGB(24, 228, 223, 223)),
               onPressed: () {},
             ),
           ],
