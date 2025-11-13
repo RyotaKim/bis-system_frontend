@@ -9,6 +9,7 @@ class ApiConfig {
 
   // Request endpoints
   static const String requestsEndpoint = '/requests';
+  static const String residentRequestEndpoint = '/resident/request';
   static String requestByIdEndpoint(String id) => '/requests/$id';
   static String updateRequestStatusEndpoint(String id) =>
       '/requests/$id/status';

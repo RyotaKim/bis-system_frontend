@@ -1,3 +1,4 @@
+import 'dart:io';
 import '../config/api_config.dart';
 import 'api_service.dart';
 
@@ -55,6 +56,65 @@ class RequestService {
     }
   }
 
+  /// Create new request with image upload (for residents)
+  Future<Map<String, dynamic>> createRequestWithImage({
+    required String fullName,
+    required String contactNumber,
+    required String address,
+    required String purpose,
+    required int age,
+    required String docTypeId,
+    File? idImage,
+    List<int>? idImageBytes,
+    String? idImageName,
+    String? eduAttainment,
+    String? eduCourse,
+    String? maritalStatus,
+  }) async {
+    try {
+      // Prepare form fields
+      final fields = {
+        'fullName': fullName,
+        'contactNumber': contactNumber,
+        'address': address,
+        'purpose': purpose,
+        'age': age.toString(),
+        'docTypeId': docTypeId,
+      };
+
+      // Add optional fields
+      if (eduAttainment != null && eduAttainment.isNotEmpty) {
+        fields['eduAttainment'] = eduAttainment;
+      }
+      if (eduCourse != null && eduCourse.isNotEmpty) {
+        fields['eduCourse'] = eduCourse;
+      }
+      if (maritalStatus != null && maritalStatus.isNotEmpty) {
+        fields['maritalStatus'] = maritalStatus;
+      }
+
+      // Make multipart request (use bytes for web, File for mobile)
+      final response = idImageBytes != null
+          ? await _api.postMultipartWithBytes(
+              ApiConfig.residentRequestEndpoint,
+              fields,
+              idImageBytes,
+              idImageName ?? 'image.jpg',
+              requiresAuth: false,
+            )
+          : await _api.postMultipart(
+              ApiConfig.residentRequestEndpoint,
+              fields,
+              idImage,
+              requiresAuth: false,
+            );
+
+      return response;
+    } catch (e) {
+      throw Exception('Failed to create request: $e');
+    }
+  }
+
   /// Update request status
   Future<Map<String, dynamic>> updateRequestStatus(
       String id, String status) async {
@@ -83,7 +143,8 @@ class RequestService {
     try {
       final response =
           await _api.get(ApiConfig.documentTypesEndpoint, requiresAuth: false);
-      return response['documentTypes'] ?? response;
+      // Backend returns 'docTypes' not 'documentTypes'
+      return response['docTypes'] ?? response['documentTypes'] ?? response;
     } catch (e) {
       throw Exception('Failed to fetch document types: $e');
     }

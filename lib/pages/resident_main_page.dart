@@ -1,5 +1,10 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'login_page.dart'; // use the existing LoginPage instead of AdminLoginPage
+import '../services/request_service.dart';
+import '../models/document_type_model.dart';
 
 // Converted to StatefulWidget (kept) — removed debug-only snack & flag.
 class ResidentMainPage extends StatefulWidget {
@@ -22,7 +27,120 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _maritalController = TextEditingController();
   String docType = 'Barangay Clearance';
-  String? uploadedFile;
+  File? _selectedImage;
+  String? _selectedImageName;
+  List<int>? _webImageBytes; // For web platform
+  final RequestService _requestService = RequestService();
+  List<DocumentType> _documentTypes = [];
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDocumentTypes();
+  }
+
+  Future<void> _loadDocumentTypes() async {
+    try {
+      final types = await _requestService.getDocumentTypes();
+      setState(() {
+        _documentTypes = types.map((t) => DocumentType.fromJson(t)).toList();
+        if (_documentTypes.isNotEmpty) {
+          docType = _documentTypes[0].name;
+        }
+      });
+    } catch (e) {
+      // Don't show error for document types - we'll use fallback
+      print('Could not load document types from backend: $e');
+      print(
+          'Using fallback document type mapping. Ensure backend is running at http://localhost:3000');
+    }
+  }
+
+  Future<void> _pickImage() async {
+    if (!mounted) return;
+
+    try {
+      // Create a new ImagePicker instance
+      final picker = ImagePicker();
+
+      // Attempt to pick an image
+      final XFile? pickedFile = await picker
+          .pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      )
+          .catchError((error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to open image picker: $error'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return null;
+      });
+
+      if (pickedFile == null) {
+        return; // User cancelled or error occurred
+      }
+
+      // Read file as bytes (works on all platforms)
+      final bytes = await pickedFile.readAsBytes();
+      final fileSize = bytes.length;
+
+      // Check file size (max 5MB)
+      if (fileSize > 5 * 1024 * 1024) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Image too large. Maximum size is 5MB.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // On web, we'll use bytes; on mobile, we'll use File
+      if (kIsWeb) {
+        setState(() {
+          _webImageBytes = bytes;
+          _selectedImageName = pickedFile.name;
+          _selectedImage = null; // Clear File reference on web
+        });
+      } else {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+          _selectedImageName = pickedFile.name;
+          _webImageBytes = null;
+        });
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Image selected: ${pickedFile.name}'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -593,8 +711,7 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                                   height: 8),
                                                               DropdownButtonFormField<
                                                                   String>(
-                                                                initialValue:
-                                                                    docType,
+                                                                value: docType,
                                                                 decoration:
                                                                     InputDecoration(
                                                                   labelText:
@@ -612,18 +729,26 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                                       vertical:
                                                                           12),
                                                                 ),
-                                                                items: <String>[
-                                                                  'Barangay Clearance',
-                                                                  'Business Permit',
-                                                                  'Certificate of Indigency',
-                                                                  'First time job seeker'
-                                                                ]
-                                                                    .map((d) => DropdownMenuItem(
-                                                                        value:
-                                                                            d,
-                                                                        child: Text(
-                                                                            d)))
-                                                                    .toList(),
+                                                                items: _documentTypes
+                                                                        .isEmpty
+                                                                    ? <String>[
+                                                                        'Barangay Clearance',
+                                                                        'Business Permit',
+                                                                        'Certificate of Indigency',
+                                                                        'First Time Job Seeker Form'
+                                                                      ]
+                                                                        .map((d) => DropdownMenuItem(
+                                                                            value:
+                                                                                d,
+                                                                            child: Text(
+                                                                                d)))
+                                                                        .toList()
+                                                                    : _documentTypes
+                                                                        .map((dt) => DropdownMenuItem(
+                                                                            value:
+                                                                                dt.name,
+                                                                            child: Text(dt.name)))
+                                                                        .toList(),
                                                                 onChanged: (v) {
                                                                   if (v !=
                                                                       null) {
@@ -659,23 +784,27 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                                 children: [
                                                                   Expanded(
                                                                     child: Text(
-                                                                      uploadedFile ??
-                                                                          'No file selected',
+                                                                      _selectedImageName ??
+                                                                          'No image selected',
                                                                       style: TextStyle(
-                                                                          color: uploadedFile == null
+                                                                          color: _selectedImageName == null
                                                                               ? Colors.grey
                                                                               : Colors.black),
+                                                                      overflow:
+                                                                          TextOverflow
+                                                                              .ellipsis,
                                                                     ),
                                                                   ),
-                                                                  TextButton(
+                                                                  TextButton
+                                                                      .icon(
                                                                     onPressed:
-                                                                        () {
-                                                                      // Placeholder upload: replace with file picker later
-                                                                      setState(() =>
-                                                                          uploadedFile =
-                                                                              'document.pdf');
-                                                                    },
-                                                                    child: const Text(
+                                                                        _pickImage,
+                                                                    icon: const Icon(
+                                                                        Icons
+                                                                            .upload_file,
+                                                                        size:
+                                                                            18),
+                                                                    label: const Text(
                                                                         'Upload'),
                                                                   ),
                                                                 ],
@@ -704,79 +833,227 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                         const SizedBox(
                                                             width: 8),
                                                         ElevatedButton(
-                                                          onPressed: () {
-                                                            if (formKey
-                                                                    .currentState
-                                                                    ?.validate() ??
-                                                                false) {
-                                                              // Encode current date as ISO string and save the request
-                                                              final isoDate =
-                                                                  DateTime.now()
-                                                                      .toIso8601String();
-                                                              // Generate a simple reference number
-                                                              final refNo =
-                                                                  'RN${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
-                                                              // Add to in-memory list for results display
-                                                              // Use outer State's setState to ensure stored data persists
-                                                              this.setState(() {
-                                                                _submittedRequests
-                                                                    .add({
-                                                                  'refNo':
-                                                                      refNo,
-                                                                  'fullName':
-                                                                      _nameController
-                                                                          .text,
-                                                                  'contactNumber':
-                                                                      _contactController
-                                                                          .text,
-                                                                  'address':
-                                                                      _addressController
-                                                                          .text,
-                                                                  'purpose':
-                                                                      _purposeController
-                                                                          .text,
-                                                                  'eduAttainment':
-                                                                      _eduAttainController
-                                                                          .text,
-                                                                  'eduCourse':
-                                                                      _eduCourseController
-                                                                          .text,
-                                                                  'age':
-                                                                      _ageController
-                                                                          .text,
-                                                                  'maritalStatus':
-                                                                      _maritalController
-                                                                          .text,
-                                                                  'docType':
-                                                                      docType,
-                                                                  'uploadedFile':
-                                                                      uploadedFile,
-                                                                  'date':
-                                                                      isoDate, // encoded date
-                                                                  'status':
-                                                                      'Pending',
-                                                                });
-                                                              });
+                                                          onPressed:
+                                                              _isSubmitting
+                                                                  ? null
+                                                                  : () async {
+                                                                      if (formKey
+                                                                              .currentState
+                                                                              ?.validate() ??
+                                                                          false) {
+                                                                        // Validate image upload (check both web bytes and mobile file)
+                                                                        if (_selectedImage ==
+                                                                                null &&
+                                                                            _webImageBytes ==
+                                                                                null) {
+                                                                          ScaffoldMessenger.of(context)
+                                                                              .showSnackBar(
+                                                                            const SnackBar(
+                                                                              content: Text('Please upload a valid ID image'),
+                                                                              backgroundColor: Colors.red,
+                                                                            ),
+                                                                          );
+                                                                          return;
+                                                                        }
 
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .pop();
+                                                                        setState(() =>
+                                                                            _isSubmitting =
+                                                                                true);
 
-                                                              ScaffoldMessenger
-                                                                      .of(context)
-                                                                  .showSnackBar(
-                                                                SnackBar(
-                                                                  content: Text(
-                                                                      'Request submitted for ${_nameController.text} on ${DateTime.parse(isoDate).toLocal().toString().split('.').first}'),
-                                                                  backgroundColor:
-                                                                      Colors
-                                                                          .green,
-                                                                ),
-                                                              );
-                                                            }
-                                                          },
-                                                          child: const Text(
-                                                              'Submit'),
+                                                                        try {
+                                                                          // Check if document types are loaded
+                                                                          if (_documentTypes
+                                                                              .isEmpty) {
+                                                                            if (context.mounted) {
+                                                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                                                const SnackBar(
+                                                                                  content: Text('Backend connection failed. Please ensure the backend server is running at http://localhost:3000'),
+                                                                                  backgroundColor: Colors.red,
+                                                                                  duration: Duration(seconds: 5),
+                                                                                ),
+                                                                              );
+                                                                            }
+                                                                            return;
+                                                                          }
+
+                                                                          // Find the matching document type from backend
+                                                                          final selectedDocType =
+                                                                              _documentTypes.firstWhere(
+                                                                            (dt) =>
+                                                                                dt.name ==
+                                                                                docType,
+                                                                            orElse: () =>
+                                                                                _documentTypes.first,
+                                                                          );
+
+                                                                          // Submit request to backend
+                                                                          final response =
+                                                                              await _requestService.createRequestWithImage(
+                                                                            fullName:
+                                                                                _nameController.text,
+                                                                            contactNumber:
+                                                                                _contactController.text,
+                                                                            address:
+                                                                                _addressController.text,
+                                                                            purpose:
+                                                                                _purposeController.text,
+                                                                            age:
+                                                                                int.parse(_ageController.text),
+                                                                            docTypeId:
+                                                                                selectedDocType.id,
+                                                                            idImage:
+                                                                                _selectedImage,
+                                                                            idImageBytes:
+                                                                                _webImageBytes,
+                                                                            idImageName:
+                                                                                _selectedImageName,
+                                                                            eduAttainment: _eduAttainController.text.isEmpty
+                                                                                ? null
+                                                                                : _eduAttainController.text,
+                                                                            eduCourse: _eduCourseController.text.isEmpty
+                                                                                ? null
+                                                                                : _eduCourseController.text,
+                                                                            maritalStatus: _maritalController.text.isEmpty
+                                                                                ? null
+                                                                                : _maritalController.text,
+                                                                          );
+
+                                                                          final refNo =
+                                                                              response['ref'] ?? 'N/A';
+
+                                                                          // Close the form dialog
+                                                                          if (context
+                                                                              .mounted) {
+                                                                            Navigator.of(context).pop();
+
+                                                                            // Show success dialog with reference number
+                                                                            showDialog(
+                                                                              context: context,
+                                                                              barrierDismissible: false,
+                                                                              builder: (BuildContext dialogContext) {
+                                                                                return AlertDialog(
+                                                                                  title: const Row(
+                                                                                    children: [
+                                                                                      Icon(
+                                                                                        Icons.check_circle,
+                                                                                        color: Colors.green,
+                                                                                        size: 28,
+                                                                                      ),
+                                                                                      SizedBox(width: 8),
+                                                                                      Text('Request Submitted'),
+                                                                                    ],
+                                                                                  ),
+                                                                                  content: Column(
+                                                                                    mainAxisSize: MainAxisSize.min,
+                                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                                    children: [
+                                                                                      const Text(
+                                                                                        'Your reference number is:',
+                                                                                        style: TextStyle(
+                                                                                          fontSize: 14,
+                                                                                          color: Colors.black87,
+                                                                                        ),
+                                                                                      ),
+                                                                                      const SizedBox(height: 12),
+                                                                                      Container(
+                                                                                        padding: const EdgeInsets.all(16),
+                                                                                        decoration: BoxDecoration(
+                                                                                          color: lightGreen,
+                                                                                          borderRadius: BorderRadius.circular(8),
+                                                                                          border: Border.all(
+                                                                                            color: green,
+                                                                                            width: 2,
+                                                                                          ),
+                                                                                        ),
+                                                                                        child: Center(
+                                                                                          child: Text(
+                                                                                            refNo,
+                                                                                            style: const TextStyle(
+                                                                                              fontSize: 24,
+                                                                                              fontWeight: FontWeight.bold,
+                                                                                              color: Color(0xFF1B5E20),
+                                                                                              letterSpacing: 2,
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      ),
+                                                                                      const SizedBox(height: 16),
+                                                                                      const Text(
+                                                                                        'Take a screenshot of your reference number to check the status of your request later.',
+                                                                                        style: TextStyle(
+                                                                                          fontSize: 12,
+                                                                                          color: Colors.black54,
+                                                                                          fontStyle: FontStyle.italic,
+                                                                                        ),
+                                                                                        textAlign: TextAlign.center,
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                  actions: [
+                                                                                    TextButton(
+                                                                                      onPressed: () {
+                                                                                        Navigator.of(dialogContext).pop();
+                                                                                        // Clear form
+                                                                                        _nameController.clear();
+                                                                                        _contactController.clear();
+                                                                                        _addressController.clear();
+                                                                                        _purposeController.clear();
+                                                                                        _eduAttainController.clear();
+                                                                                        _eduCourseController.clear();
+                                                                                        _ageController.clear();
+                                                                                        _maritalController.clear();
+                                                                                        setState(() {
+                                                                                          _selectedImage = null;
+                                                                                          _selectedImageName = null;
+                                                                                        });
+                                                                                      },
+                                                                                      child: const Text(
+                                                                                        'OK',
+                                                                                        style: TextStyle(
+                                                                                          fontSize: 16,
+                                                                                          fontWeight: FontWeight.w600,
+                                                                                        ),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ],
+                                                                                );
+                                                                              },
+                                                                            );
+                                                                          }
+                                                                        } catch (e) {
+                                                                          if (context
+                                                                              .mounted) {
+                                                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                                              SnackBar(
+                                                                                content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
+                                                                                backgroundColor: Colors.red,
+                                                                              ),
+                                                                            );
+                                                                          }
+                                                                        } finally {
+                                                                          if (mounted) {
+                                                                            setState(() =>
+                                                                                _isSubmitting = false);
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    },
+                                                          child: _isSubmitting
+                                                              ? const SizedBox(
+                                                                  width: 20,
+                                                                  height: 20,
+                                                                  child:
+                                                                      CircularProgressIndicator(
+                                                                    strokeWidth:
+                                                                        2,
+                                                                    valueColor: AlwaysStoppedAnimation<
+                                                                            Color>(
+                                                                        Colors
+                                                                            .white),
+                                                                  ),
+                                                                )
+                                                              : const Text(
+                                                                  'Submit'),
                                                         ),
                                                       ],
                                                     ),

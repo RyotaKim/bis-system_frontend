@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import '../config/api_config.dart';
 import 'storage_service.dart';
 
@@ -99,6 +101,116 @@ class ApiService {
       return _handleResponse(response);
     } catch (e) {
       throw _handleError(e);
+    }
+  }
+
+  /// Make multipart request (for file uploads)
+  Future<dynamic> postMultipart(
+    String endpoint,
+    Map<String, String> fields,
+    File? imageFile, {
+    bool requiresAuth = false,
+    String fileFieldName = 'idImage',
+  }) async {
+    try {
+      final url = Uri.parse('${ApiConfig.baseUrl}$endpoint');
+      final request = http.MultipartRequest('POST', url);
+
+      // Add headers
+      if (requiresAuth) {
+        final token = _storage.getToken();
+        if (token != null && token.isNotEmpty) {
+          request.headers['Authorization'] = 'Bearer $token';
+        }
+      }
+
+      // Add text fields
+      request.fields.addAll(fields);
+
+      // Add image file if provided
+      if (imageFile != null) {
+        final mimeType = _getMimeType(imageFile.path);
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            fileFieldName,
+            imageFile.path,
+            contentType: MediaType.parse(mimeType),
+          ),
+        );
+      }
+
+      // Send request
+      final streamedResponse = await request.send().timeout(ApiConfig.timeout);
+      final response = await http.Response.fromStream(streamedResponse);
+
+      return _handleResponse(response);
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// Make multipart request with bytes (for web uploads)
+  Future<dynamic> postMultipartWithBytes(
+    String endpoint,
+    Map<String, String> fields,
+    List<int>? imageBytes,
+    String fileName, {
+    bool requiresAuth = false,
+    String fileFieldName = 'idImage',
+  }) async {
+    try {
+      final url = Uri.parse('${ApiConfig.baseUrl}$endpoint');
+      final request = http.MultipartRequest('POST', url);
+
+      // Add headers
+      if (requiresAuth) {
+        final token = _storage.getToken();
+        if (token != null && token.isNotEmpty) {
+          request.headers['Authorization'] = 'Bearer $token';
+        }
+      }
+
+      // Add text fields
+      request.fields.addAll(fields);
+
+      // Add image bytes if provided
+      if (imageBytes != null) {
+        final mimeType = _getMimeType(fileName);
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            fileFieldName,
+            imageBytes,
+            filename: fileName,
+            contentType: MediaType.parse(mimeType),
+          ),
+        );
+      }
+
+      // Send request
+      final streamedResponse = await request.send().timeout(ApiConfig.timeout);
+      final response = await http.Response.fromStream(streamedResponse);
+
+      return _handleResponse(response);
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// Get MIME type from file extension
+  String _getMimeType(String path) {
+    final ext = path.toLowerCase().split('.').last;
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'image/jpeg';
     }
   }
 
