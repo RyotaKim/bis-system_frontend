@@ -15,9 +15,6 @@ class ResidentMainPage extends StatefulWidget {
 }
 
 class _ResidentMainPageState extends State<ResidentMainPage> {
-  // Add an in-memory list to keep submitted requests (includes encoded date)
-  final List<Map<String, dynamic>> _submittedRequests = [];
-
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
@@ -1092,27 +1089,30 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                               height: 64,
                               child: ElevatedButton.icon(
                                 onPressed: () {
-                                  // Show results dialog with submitted requests and their dates
+                                  // Show status check dialog
                                   showDialog<void>(
                                     context: context,
                                     builder: (context) {
                                       final TextEditingController
                                           searchController =
                                           TextEditingController();
-                                      Map<String, dynamic>? found;
+                                      Map<String, dynamic>? foundRequest;
+                                      bool isSearching = false;
+                                      String? errorMessage;
+
                                       return StatefulBuilder(
-                                          builder: (c, setC) {
+                                          builder: (context, setDialogState) {
                                         return Dialog(
                                           child: ConstrainedBox(
                                             constraints: BoxConstraints(
                                               maxWidth: MediaQuery.of(context)
                                                       .size
                                                       .width *
-                                                  0.9,
+                                                  0.5,
                                               maxHeight: MediaQuery.of(context)
                                                       .size
                                                       .height *
-                                                  0.8,
+                                                  0.6,
                                             ),
                                             child: Padding(
                                               padding:
@@ -1122,13 +1122,13 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   const Text(
-                                                    'Request Status',
+                                                    'Check Request Status',
                                                     style: TextStyle(
-                                                        fontSize: 18,
+                                                        fontSize: 20,
                                                         fontWeight:
                                                             FontWeight.bold),
                                                   ),
-                                                  const SizedBox(height: 12),
+                                                  const SizedBox(height: 16),
                                                   Row(
                                                     children: [
                                                       Expanded(
@@ -1138,124 +1138,308 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                           decoration:
                                                               const InputDecoration(
                                                             labelText:
-                                                                'Reference Number',
+                                                                'Enter Reference Number',
+                                                            hintText:
+                                                                'e.g., REQ-2025-11-00001',
                                                             border:
                                                                 OutlineInputBorder(),
+                                                            prefixIcon: Icon(
+                                                                Icons.search),
                                                           ),
+                                                          onSubmitted:
+                                                              (value) async {
+                                                            if (value
+                                                                .trim()
+                                                                .isEmpty) {
+                                                              return;
+                                                            }
+
+                                                            setDialogState(() {
+                                                              isSearching =
+                                                                  true;
+                                                              errorMessage =
+                                                                  null;
+                                                              foundRequest =
+                                                                  null;
+                                                            });
+
+                                                            try {
+                                                              final result =
+                                                                  await _requestService
+                                                                      .getRequestByRefNo(
+                                                                          value
+                                                                              .trim());
+
+                                                              setDialogState(
+                                                                  () {
+                                                                foundRequest =
+                                                                    result;
+                                                                isSearching =
+                                                                    false;
+                                                              });
+                                                            } catch (e) {
+                                                              setDialogState(
+                                                                  () {
+                                                                errorMessage =
+                                                                    'Request not found. Please check the reference number.';
+                                                                foundRequest =
+                                                                    null;
+                                                                isSearching =
+                                                                    false;
+                                                              });
+                                                            }
+                                                          },
                                                         ),
                                                       ),
                                                       const SizedBox(width: 8),
                                                       ElevatedButton(
-                                                        onPressed: () {
-                                                          final q =
-                                                              searchController
-                                                                  .text
-                                                                  .trim();
-                                                          final match = _submittedRequests
-                                                              .firstWhere(
-                                                                  (r) =>
-                                                                      r['refNo'] ==
-                                                                      q,
-                                                                  orElse: () =>
-                                                                      <String,
-                                                                          dynamic>{});
-                                                          setC(() {
-                                                            found =
-                                                                match.isEmpty
-                                                                    ? null
-                                                                    : match;
-                                                          });
-                                                        },
-                                                        child: const Text(
-                                                            'Search'),
+                                                        onPressed: isSearching
+                                                            ? null
+                                                            : () async {
+                                                                final refNo =
+                                                                    searchController
+                                                                        .text
+                                                                        .trim();
+
+                                                                if (refNo
+                                                                    .isEmpty) {
+                                                                  setDialogState(
+                                                                      () {
+                                                                    errorMessage =
+                                                                        'Please enter a reference number';
+                                                                  });
+                                                                  return;
+                                                                }
+
+                                                                setDialogState(
+                                                                    () {
+                                                                  isSearching =
+                                                                      true;
+                                                                  errorMessage =
+                                                                      null;
+                                                                  foundRequest =
+                                                                      null;
+                                                                });
+
+                                                                try {
+                                                                  final result =
+                                                                      await _requestService
+                                                                          .getRequestByRefNo(
+                                                                              refNo);
+
+                                                                  setDialogState(
+                                                                      () {
+                                                                    foundRequest =
+                                                                        result;
+                                                                    isSearching =
+                                                                        false;
+                                                                  });
+                                                                } catch (e) {
+                                                                  setDialogState(
+                                                                      () {
+                                                                    errorMessage =
+                                                                        'Request not found. Please check the reference number.';
+                                                                    foundRequest =
+                                                                        null;
+                                                                    isSearching =
+                                                                        false;
+                                                                  });
+                                                                }
+                                                              },
+                                                        child: isSearching
+                                                            ? const SizedBox(
+                                                                width: 20,
+                                                                height: 20,
+                                                                child:
+                                                                    CircularProgressIndicator(
+                                                                  strokeWidth:
+                                                                      2,
+                                                                ),
+                                                              )
+                                                            : const Text(
+                                                                'Search'),
                                                       ),
                                                     ],
                                                   ),
-                                                  const SizedBox(height: 12),
+                                                  const SizedBox(height: 16),
                                                   Expanded(
-                                                    child: found == null
-                                                        ? Center(
-                                                            child: Text(
-                                                              'Enter your reference number to see the request status.',
-                                                              style: TextStyle(
-                                                                  color: Colors
-                                                                          .grey[
-                                                                      700]),
+                                                    child: isSearching
+                                                        ? const Center(
+                                                            child: Column(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                CircularProgressIndicator(),
+                                                                SizedBox(
+                                                                    height: 16),
+                                                                Text(
+                                                                    'Searching...'),
+                                                              ],
                                                             ),
                                                           )
-                                                        : Card(
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(
-                                                                      12.0),
-                                                              child: Column(
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Text(
-                                                                    'Reference: ${found!['refNo']}',
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            16,
-                                                                        fontWeight:
-                                                                            FontWeight.w600),
-                                                                  ),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          6),
-                                                                  Text(
-                                                                      'Name: ${found!['fullName'] ?? '-'}'),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          4),
-                                                                  Text(
-                                                                      'Document: ${found!['docType'] ?? '-'}'),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          8),
-                                                                  Row(
-                                                                    children: [
-                                                                      Container(
-                                                                        padding: const EdgeInsets
-                                                                            .symmetric(
-                                                                            horizontal:
-                                                                                8,
-                                                                            vertical:
-                                                                                4),
-                                                                        decoration:
-                                                                            BoxDecoration(
-                                                                          color: (found!['status'] == 'Released')
-                                                                              ? Colors.blue.shade100
-                                                                              : (found!['status'] == 'Approved')
-                                                                                  ? Colors.green.shade100
-                                                                                  : Colors.orange.shade100,
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(12),
+                                                        : errorMessage != null
+                                                            ? Center(
+                                                                child: Column(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
+                                                                  children: [
+                                                                    Icon(
+                                                                      Icons
+                                                                          .error_outline,
+                                                                      size: 48,
+                                                                      color: Colors
+                                                                          .red,
+                                                                    ),
+                                                                    const SizedBox(
+                                                                        height:
+                                                                            16),
+                                                                    Text(
+                                                                      errorMessage!,
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .center,
+                                                                      style: const TextStyle(
+                                                                          color:
+                                                                              Colors.red),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              )
+                                                            : foundRequest ==
+                                                                    null
+                                                                ? Center(
+                                                                    child:
+                                                                        Column(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .center,
+                                                                      children: [
+                                                                        Icon(
+                                                                          Icons
+                                                                              .search,
+                                                                          size:
+                                                                              64,
+                                                                          color:
+                                                                              Colors.grey[400],
                                                                         ),
-                                                                        child:
-                                                                            Text(
-                                                                          found!['status'] ??
-                                                                              'Pending',
-                                                                          style:
-                                                                              TextStyle(
-                                                                            color: (found!['status'] == 'Released')
-                                                                                ? Colors.blue.shade800
-                                                                                : (found!['status'] == 'Approved')
-                                                                                    ? Colors.green.shade800
-                                                                                    : Colors.orange.shade800,
-                                                                            fontWeight:
-                                                                                FontWeight.bold,
+                                                                        const SizedBox(
+                                                                            height:
+                                                                                16),
+                                                                        Text(
+                                                                          'Enter your reference number to check status',
+                                                                          style: TextStyle(
+                                                                              color: Colors.grey[600],
+                                                                              fontSize: 16),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  )
+                                                                : Card(
+                                                                    elevation:
+                                                                        2,
+                                                                    child:
+                                                                        Padding(
+                                                                      padding: const EdgeInsets
+                                                                          .all(
+                                                                          20.0),
+                                                                      child:
+                                                                          Column(
+                                                                        crossAxisAlignment:
+                                                                            CrossAxisAlignment.start,
+                                                                        mainAxisSize:
+                                                                            MainAxisSize.min,
+                                                                        children: [
+                                                                          const Text(
+                                                                            'Request Details',
+                                                                            style: TextStyle(
+                                                                                fontSize: 18,
+                                                                                fontWeight: FontWeight.bold,
+                                                                                color: green),
                                                                           ),
-                                                                        ),
+                                                                          const SizedBox(
+                                                                              height: 16),
+                                                                          _buildStatusRow(
+                                                                              'Reference Number',
+                                                                              foundRequest!['ref'] ?? '-'),
+                                                                          const SizedBox(
+                                                                              height: 12),
+                                                                          _buildStatusRow(
+                                                                              'Name',
+                                                                              foundRequest!['fullName'] ?? '-'),
+                                                                          const SizedBox(
+                                                                              height: 12),
+                                                                          const Text(
+                                                                            'Status:',
+                                                                            style: TextStyle(
+                                                                                fontSize: 14,
+                                                                                fontWeight: FontWeight.bold,
+                                                                                color: Colors.black87),
+                                                                          ),
+                                                                          const SizedBox(
+                                                                              height: 8),
+                                                                          Container(
+                                                                            padding:
+                                                                                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                                            decoration:
+                                                                                BoxDecoration(
+                                                                              color: _getStatusColor(foundRequest!['status']),
+                                                                              borderRadius: BorderRadius.circular(20),
+                                                                            ),
+                                                                            child:
+                                                                                Text(
+                                                                              (foundRequest!['status'] ?? 'pending').toString().toUpperCase(),
+                                                                              style: const TextStyle(
+                                                                                color: Colors.white,
+                                                                                fontWeight: FontWeight.bold,
+                                                                                fontSize: 16,
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                          const SizedBox(
+                                                                              height: 16),
+                                                                          const Divider(),
+                                                                          const SizedBox(
+                                                                              height: 12),
+                                                                          Container(
+                                                                            padding:
+                                                                                const EdgeInsets.all(12),
+                                                                            decoration:
+                                                                                BoxDecoration(
+                                                                              color: _getStatusColor(foundRequest!['status']).withOpacity(0.1),
+                                                                              borderRadius: BorderRadius.circular(8),
+                                                                              border: Border.all(
+                                                                                color: _getStatusColor(foundRequest!['status']).withOpacity(0.3),
+                                                                              ),
+                                                                            ),
+                                                                            child:
+                                                                                Row(
+                                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                                              children: [
+                                                                                Icon(
+                                                                                  _getStatusIcon(foundRequest!['status']),
+                                                                                  color: _getStatusColor(foundRequest!['status']),
+                                                                                  size: 24,
+                                                                                ),
+                                                                                const SizedBox(width: 12),
+                                                                                Expanded(
+                                                                                  child: Text(
+                                                                                    _getStatusMessage(foundRequest!['status']),
+                                                                                    style: TextStyle(
+                                                                                      fontSize: 14,
+                                                                                      color: Colors.black87,
+                                                                                      height: 1.4,
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+                                                                              ],
+                                                                            ),
+                                                                          ),
+                                                                        ],
                                                                       ),
-                                                                    ],
+                                                                    ),
                                                                   ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
                                                   ),
                                                   const SizedBox(height: 12),
                                                   Align(
@@ -1321,6 +1505,70 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
         fontWeight: FontWeight.w600,
       ),
     );
+  }
+
+  Widget _buildStatusRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 140,
+          child: Text(
+            '$label:',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getStatusColor(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'approved':
+        return Colors.green;
+      case 'rejected':
+        return Colors.red;
+      case 'pending':
+      default:
+        return Colors.amber;
+    }
+  }
+
+  IconData _getStatusIcon(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'approved':
+        return Icons.check_circle;
+      case 'rejected':
+        return Icons.cancel;
+      case 'pending':
+      default:
+        return Icons.hourglass_empty;
+    }
+  }
+
+  String _getStatusMessage(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'approved':
+        return 'You may now go and get your Document at the Barangay office.';
+      case 'rejected':
+        return 'ID does not have enough information that certifies your residency. Please upload a different ID with your full address, name, and birthdate or go to the barangay directly.';
+      case 'pending':
+      default:
+        return 'Your request is still under review. Please wait for the barangay staff to process your application.';
+    }
   }
 
   @override

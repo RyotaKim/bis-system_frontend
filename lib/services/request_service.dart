@@ -10,7 +10,23 @@ class RequestService {
   Future<List<dynamic>> getRequests() async {
     try {
       final response = await _api.get(ApiConfig.requestsEndpoint);
-      return response['requests'] ?? response;
+
+      // Handle different response structures
+      if (response is List) {
+        return response;
+      } else if (response is Map) {
+        // Try to extract requests from various possible keys
+        if (response.containsKey('requests')) {
+          final requests = response['requests'];
+          return requests is List ? requests : [];
+        } else if (response.containsKey('data')) {
+          final data = response['data'];
+          return data is List ? data : [];
+        }
+      }
+
+      // If response is neither List nor Map with expected keys, return empty list
+      return [];
     } catch (e) {
       throw Exception('Failed to fetch requests: $e');
     }
@@ -26,15 +42,19 @@ class RequestService {
     }
   }
 
-  /// Get request by reference number
+  /// Get request by reference number (for residents - public endpoint)
   Future<Map<String, dynamic>> getRequestByRefNo(String refNo) async {
     try {
-      final response = await _api
-          .get('${ApiConfig.requestsEndpoint}?ref=$refNo', requiresAuth: false);
-      final requests = response['requests'] ?? response;
-      if (requests is List && requests.isNotEmpty) {
-        return requests[0];
+      final response = await _api.get(
+        '${ApiConfig.residentRequestStatusEndpoint}?ref=$refNo',
+        requiresAuth: false,
+      );
+
+      // The endpoint returns the request directly or in a 'request' field
+      if (response is Map) {
+        return response['request'] ?? response;
       }
+
       throw Exception('Request not found');
     } catch (e) {
       throw Exception('Failed to fetch request: $e');
@@ -119,7 +139,7 @@ class RequestService {
   Future<Map<String, dynamic>> updateRequestStatus(
       String id, String status) async {
     try {
-      final response = await _api.patch(
+      final response = await _api.put(
         ApiConfig.updateRequestStatusEndpoint(id),
         {'status': status},
       );
@@ -143,8 +163,26 @@ class RequestService {
     try {
       final response =
           await _api.get(ApiConfig.documentTypesEndpoint, requiresAuth: false);
-      // Backend returns 'docTypes' not 'documentTypes'
-      return response['docTypes'] ?? response['documentTypes'] ?? response;
+
+      // Handle different response structures
+      if (response is List) {
+        return response;
+      } else if (response is Map) {
+        // Try to extract document types from various possible keys
+        if (response.containsKey('docTypes')) {
+          final docTypes = response['docTypes'];
+          return docTypes is List ? docTypes : [];
+        } else if (response.containsKey('documentTypes')) {
+          final docTypes = response['documentTypes'];
+          return docTypes is List ? docTypes : [];
+        } else if (response.containsKey('data')) {
+          final data = response['data'];
+          return data is List ? data : [];
+        }
+      }
+
+      // If response is neither List nor Map with expected keys, return empty list
+      return [];
     } catch (e) {
       throw Exception('Failed to fetch document types: $e');
     }

@@ -7,18 +7,34 @@ class ApiConfig {
   // Auth endpoints
   static const String loginEndpoint = '/auth/login';
 
-  // Request endpoints
-  static const String requestsEndpoint = '/requests';
-  static const String residentRequestEndpoint = '/resident/request';
-  static String requestByIdEndpoint(String id) => '/requests/$id';
-  static String updateRequestStatusEndpoint(String id) =>
-      '/requests/$id/status';
+  // Admin endpoints
+  static const String adminRequestsEndpoint = '/admin/requests';
+  static String adminRequestByIdEndpoint(String id) => '/admin/requests/$id';
+  static String adminUpdateRequestStatusEndpoint(String id) =>
+      '/admin/requests/$id/status';
+  static String adminDeleteRequestEndpoint(String id) => '/admin/requests/$id';
+  static const String adminComplaintsEndpoint = '/admin/complaints';
+  static String adminComplaintByIdEndpoint(String id) =>
+      '/admin/complaints/$id';
+  static String adminUpdateComplaintStatusEndpoint(String id) =>
+      '/admin/complaints/$id/status';
+  static String adminDeleteComplaintEndpoint(String id) =>
+      '/admin/complaints/$id';
 
-  // Complaint endpoints
-  static const String complaintsEndpoint = '/complaints';
-  static String complaintByIdEndpoint(String id) => '/complaints/$id';
+  // Request endpoints (legacy - keeping for backward compatibility)
+  static const String requestsEndpoint = '/admin/requests';
+  static const String residentRequestEndpoint = '/resident/request';
+  static const String residentRequestStatusEndpoint =
+      '/resident/request/status';
+  static String requestByIdEndpoint(String id) => '/admin/requests/$id';
+  static String updateRequestStatusEndpoint(String id) =>
+      '/admin/requests/$id/status';
+
+  // Complaint endpoints (legacy)
+  static const String complaintsEndpoint = '/admin/complaints';
+  static String complaintByIdEndpoint(String id) => '/admin/complaints/$id';
   static String updateComplaintStatusEndpoint(String id) =>
-      '/complaints/$id/status';
+      '/admin/complaints/$id/status';
 
   // Document types endpoints
   static const String documentTypesEndpoint = '/document-types';

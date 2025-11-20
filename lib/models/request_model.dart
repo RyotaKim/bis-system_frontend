@@ -37,27 +37,74 @@ class Request {
   });
 
   factory Request.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely convert ObjectId to string
+    String getIdAsString(dynamic value) {
+      if (value == null) return '';
+      if (value is String) return value;
+      if (value is Map) {
+        // Handle MongoDB ObjectId format: {"$oid": "..."}
+        if (value.containsKey('\$oid')) {
+          return value['\$oid'].toString();
+        }
+        // Handle nested _id format: {"_id": "..."}
+        if (value.containsKey('_id')) {
+          return getIdAsString(value['_id']);
+        }
+        // Handle id format: {"id": "..."}
+        if (value.containsKey('id')) {
+          return getIdAsString(value['id']);
+        }
+      }
+      return value.toString();
+    }
+
+    // Helper function to safely parse integer
+    int getIntValue(dynamic value, int defaultValue) {
+      if (value == null) return defaultValue;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? defaultValue;
+      return defaultValue;
+    }
+
+    // Helper function to safely parse DateTime
+    DateTime parseDateTime(dynamic value) {
+      if (value == null) return DateTime.now();
+      if (value is String) {
+        try {
+          return DateTime.parse(value);
+        } catch (e) {
+          return DateTime.now();
+        }
+      }
+      if (value is Map && value.containsKey('\$date')) {
+        try {
+          return DateTime.parse(value['\$date']);
+        } catch (e) {
+          return DateTime.now();
+        }
+      }
+      return DateTime.now();
+    }
+
     return Request(
-      id: json['_id'] ?? json['id'] ?? '',
-      ref: json['ref'] ?? '',
-      fullName: json['fullName'] ?? '',
-      contactNumber: json['contactNumber'] ?? '',
-      address: json['address'] ?? '',
-      purpose: json['purpose'] ?? '',
-      eduAttainment: json['eduAttainment'],
-      eduCourse: json['eduCourse'],
-      age: json['age'] ?? 0,
-      maritalStatus: json['maritalStatus'] ?? '',
-      docTypeId: json['docTypeId'] ?? '',
-      idImageUrl: json['idImageUrl'],
-      status: json['status'] ?? 'pending',
-      createdAt:
-          DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt:
-          DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
-      releasedAt: json['releasedAt'] != null
-          ? DateTime.parse(json['releasedAt'])
-          : null,
+      id: getIdAsString(json['_id'] ?? json['id']),
+      ref: json['ref']?.toString() ?? '',
+      fullName: json['fullName']?.toString() ?? '',
+      contactNumber: json['contactNumber']?.toString() ?? '',
+      address: json['address']?.toString() ?? '',
+      purpose: json['purpose']?.toString() ?? '',
+      eduAttainment: json['eduAttainment']?.toString(),
+      eduCourse: json['eduCourse']?.toString(),
+      age: getIntValue(json['age'], 0),
+      maritalStatus: json['maritalStatus']?.toString() ?? '',
+      docTypeId: getIdAsString(json['docTypeId']),
+      idImageUrl: json['idImageUrl']?.toString() ??
+          getIdAsString(json['uploadedFileId']),
+      status: json['status']?.toString() ?? 'pending',
+      createdAt: parseDateTime(json['createdAt']),
+      updatedAt: parseDateTime(json['updatedAt']),
+      releasedAt:
+          json['releasedAt'] != null ? parseDateTime(json['releasedAt']) : null,
     );
   }
 
