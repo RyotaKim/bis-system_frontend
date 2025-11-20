@@ -43,7 +43,7 @@ class ComplaintService {
   Future<Map<String, dynamic>> updateComplaintStatus(
       String id, String status) async {
     try {
-      final response = await _api.patch(
+      final response = await _api.put(
         ApiConfig.updateComplaintStatusEndpoint(id),
         {'status': status},
       );
