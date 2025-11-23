@@ -2,7 +2,9 @@
 class Request {
   final String id;
   final String ref;
-  final String fullName;
+  final String lastName;
+  final String firstName;
+  final String? middleInitial;
   final String contactNumber;
   final String address;
   final String purpose;
@@ -16,11 +18,16 @@ class Request {
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? releasedAt;
+  final String? approvedBy;
+  final DateTime? approvedAt;
+  final Map<String, dynamic>? approvedByUser;
 
   Request({
     required this.id,
     required this.ref,
-    required this.fullName,
+    required this.lastName,
+    required this.firstName,
+    this.middleInitial,
     required this.contactNumber,
     required this.address,
     required this.purpose,
@@ -34,7 +41,18 @@ class Request {
     required this.createdAt,
     required this.updatedAt,
     this.releasedAt,
+    this.approvedBy,
+    this.approvedAt,
+    this.approvedByUser,
   });
+
+  // Helper getter for full name
+  String get fullName {
+    final middle = middleInitial != null && middleInitial!.isNotEmpty
+        ? ' ${middleInitial!}. '
+        : ' ';
+    return '$firstName$middle$lastName';
+  }
 
   factory Request.fromJson(Map<String, dynamic> json) {
     // Helper function to safely convert ObjectId to string
@@ -89,7 +107,9 @@ class Request {
     return Request(
       id: getIdAsString(json['_id'] ?? json['id']),
       ref: json['ref']?.toString() ?? '',
-      fullName: json['fullName']?.toString() ?? '',
+      lastName: json['lastName']?.toString() ?? '',
+      firstName: json['firstName']?.toString() ?? '',
+      middleInitial: json['middleInitial']?.toString(),
       contactNumber: json['contactNumber']?.toString() ?? '',
       address: json['address']?.toString() ?? '',
       purpose: json['purpose']?.toString() ?? '',
@@ -105,6 +125,15 @@ class Request {
       updatedAt: parseDateTime(json['updatedAt']),
       releasedAt:
           json['releasedAt'] != null ? parseDateTime(json['releasedAt']) : null,
+      approvedBy:
+          json['approvedBy'] != null ? getIdAsString(json['approvedBy']) : null,
+      approvedAt:
+          json['approvedAt'] != null ? parseDateTime(json['approvedAt']) : null,
+      approvedByUser: json['approvedByUser'] != null
+          ? (json['approvedByUser'] is Map<String, dynamic>
+              ? Map<String, dynamic>.from(json['approvedByUser'])
+              : null)
+          : null,
     );
   }
 
@@ -112,7 +141,9 @@ class Request {
     return {
       '_id': id,
       'ref': ref,
-      'fullName': fullName,
+      'lastName': lastName,
+      'firstName': firstName,
+      'middleInitial': middleInitial,
       'contactNumber': contactNumber,
       'address': address,
       'purpose': purpose,
@@ -126,6 +157,9 @@ class Request {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'releasedAt': releasedAt?.toIso8601String(),
+      'approvedBy': approvedBy,
+      'approvedAt': approvedAt?.toIso8601String(),
+      'approvedByUser': approvedByUser,
     };
   }
 }

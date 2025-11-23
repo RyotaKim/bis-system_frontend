@@ -4,6 +4,7 @@ class DocumentType {
   final String name;
   final String description;
   final List<String> requirements;
+  final List<String> requiredFields;
   final double? fee;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -13,6 +14,7 @@ class DocumentType {
     required this.name,
     required this.description,
     required this.requirements,
+    required this.requiredFields,
     this.fee,
     required this.createdAt,
     required this.updatedAt,
@@ -67,6 +69,9 @@ class DocumentType {
       requirements: json['requirements'] != null
           ? List<String>.from(json['requirements'])
           : [],
+      requiredFields: json['requiredFields'] != null
+          ? List<String>.from(json['requiredFields'])
+          : [],
       fee: json['fee']?.toDouble(),
       createdAt: parseDateTime(json['createdAt']),
       updatedAt: parseDateTime(json['updatedAt']),
@@ -79,9 +84,15 @@ class DocumentType {
       'name': name,
       'description': description,
       'requirements': requirements,
+      'requiredFields': requiredFields,
       'fee': fee,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
+  }
+
+  // Helper method to check if a field is required
+  bool isFieldRequired(String fieldName) {
+    return requiredFields.contains(fieldName);
   }
 }

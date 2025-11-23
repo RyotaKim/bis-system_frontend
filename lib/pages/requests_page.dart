@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/request_model.dart';
 import '../models/document_type_model.dart';
 import '../services/request_service.dart';
@@ -472,11 +473,10 @@ class _RequestsPageState extends State<RequestsPage> {
     }
 
     // Format date
-    final formattedDate = '${request.createdAt.year}-'
-        '${request.createdAt.month.toString().padLeft(2, '0')}-'
-        '${request.createdAt.day.toString().padLeft(2, '0')} '
-        '${request.createdAt.hour.toString().padLeft(2, '0')}:'
-        '${request.createdAt.minute.toString().padLeft(2, '0')}';
+    final dateFormat = DateFormat('MMMM dd, yyyy');
+    final timeFormat = DateFormat('h:mm a');
+    final formattedDate =
+        '${dateFormat.format(request.createdAt)}\n${timeFormat.format(request.createdAt)}';
 
     return DataRow(
       cells: [
@@ -561,6 +561,19 @@ class _RequestsPageState extends State<RequestsPage> {
                 'Last Updated',
                 request.updatedAt.toString().split('.').first,
               ),
+              if (request.approvedAt != null)
+                _buildDetailRow(
+                  'Approved/Rejected At',
+                  request.approvedAt.toString().split('.').first,
+                ),
+              if (request.approvedBy != null)
+                _buildDetailRow(
+                  'Processed By',
+                  request.approvedByUser != null &&
+                          request.approvedByUser!.containsKey('name')
+                      ? request.approvedByUser!['name']
+                      : 'Admin User',
+                ),
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 8),

@@ -68,7 +68,7 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
     try {
       final response = await _complaintService.getComplaints();
       final complaints =
-          (response as List).map((json) => Complaint.fromJson(json)).toList();
+          response.map<Complaint>((json) => Complaint.fromJson(json)).toList();
 
       setState(() {
         _allComplaints = complaints;
@@ -250,6 +250,15 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                               'Date Resolved',
                               DateFormat('MMM dd, yyyy - hh:mm a')
                                   .format(complaint.resolvedAt!),
+                            ),
+                          if (complaint.processedBy != null)
+                            _buildDetailRow(
+                              'Processed By',
+                              complaint.processedByUser != null &&
+                                      complaint.processedByUser!
+                                          .containsKey('name')
+                                  ? complaint.processedByUser!['name']
+                                  : 'Admin User',
                             ),
                           const SizedBox(height: 16),
                           const Text(
@@ -858,12 +867,17 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
   }
 
   DataRow _buildComplaintRow(Complaint complaint) {
+    final dateFormat = DateFormat('MMMM dd, yyyy');
+    final timeFormat = DateFormat('h:mm a');
+    final formattedDate =
+        '${dateFormat.format(complaint.createdAt)}\n${timeFormat.format(complaint.createdAt)}';
+
     return DataRow(
       cells: [
         DataCell(Text(complaint.ref)),
         DataCell(Text(complaint.reporterName)),
         DataCell(Text(complaint.complaintType)),
-        DataCell(Text(DateFormat('MMM dd, yyyy').format(complaint.createdAt))),
+        DataCell(Text(formattedDate)),
         DataCell(
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

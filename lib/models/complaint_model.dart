@@ -11,6 +11,8 @@ class Complaint {
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? resolvedAt;
+  final String? processedBy;
+  final Map<String, dynamic>? processedByUser;
 
   Complaint({
     required this.id,
@@ -24,6 +26,8 @@ class Complaint {
     required this.createdAt,
     required this.updatedAt,
     this.resolvedAt,
+    this.processedBy,
+    this.processedByUser,
   });
 
   factory Complaint.fromJson(Map<String, dynamic> json) {
@@ -43,6 +47,12 @@ class Complaint {
       resolvedAt: json['resolvedAt'] != null
           ? DateTime.parse(json['resolvedAt'])
           : null,
+      processedBy: json['processedBy']?.toString(),
+      processedByUser: json['processedByUser'] != null
+          ? (json['processedByUser'] is Map<String, dynamic>
+              ? Map<String, dynamic>.from(json['processedByUser'])
+              : null)
+          : null,
     );
   }
 
@@ -59,6 +69,8 @@ class Complaint {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'resolvedAt': resolvedAt?.toIso8601String(),
+      'processedBy': processedBy,
+      'processedByUser': processedByUser,
     };
   }
 }

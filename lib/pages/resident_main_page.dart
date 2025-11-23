@@ -15,7 +15,10 @@ class ResidentMainPage extends StatefulWidget {
 }
 
 class _ResidentMainPageState extends State<ResidentMainPage> {
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _middleInitialController =
+      TextEditingController();
   final TextEditingController _contactController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _purposeController = TextEditingController();
@@ -44,6 +47,12 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
         _documentTypes = types.map((t) => DocumentType.fromJson(t)).toList();
         if (_documentTypes.isNotEmpty) {
           docType = _documentTypes[0].name;
+          print('Loaded ${_documentTypes.length} document types from backend');
+          // Debug: Print document types and their required fields
+          for (var dt in _documentTypes) {
+            print(
+                'Document Type: ${dt.name}, Required Fields: ${dt.requiredFields}');
+          }
         }
       });
     } catch (e) {
@@ -137,6 +146,65 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
         );
       }
     }
+  }
+
+  /// Check if the selected document type requires a specific field
+  bool _isFieldRequired(String fieldName) {
+    print('DEBUG: ============================================');
+    print('DEBUG: Checking if "$fieldName" is required');
+    print('DEBUG: Current docType: "$docType"');
+    print('DEBUG: _documentTypes.isEmpty: ${_documentTypes.isEmpty}');
+    print('DEBUG: Number of document types loaded: ${_documentTypes.length}');
+
+    // Handle fallback case when backend is not loaded
+    if (_documentTypes.isEmpty) {
+      print('DEBUG: Using FALLBACK mode (backend not loaded)');
+      // For First-time Job Seeker, education fields are required
+      if ((docType == 'First-time Job Seeker' ||
+              docType == 'First Time Job Seeker Form') &&
+          (fieldName == 'eduAttainment' || fieldName == 'eduCourse')) {
+        print('DEBUG: ✓ FALLBACK - $fieldName IS REQUIRED for "$docType"');
+        return true;
+      }
+      print('DEBUG: ✗ FALLBACK - $fieldName is NOT required for "$docType"');
+      return false;
+    }
+
+    print('DEBUG: Using BACKEND mode (${_documentTypes.length} types loaded)');
+    final selectedDocType = _documentTypes.firstWhere(
+      (dt) {
+        print('DEBUG: Comparing "$docType" with "${dt.name}"');
+        return dt.name == docType;
+      },
+      orElse: () {
+        print(
+            'DEBUG: No match found, using first document type: ${_documentTypes.first.name}');
+        return _documentTypes.first;
+      },
+    );
+
+    print('DEBUG: Selected document type: "${selectedDocType.name}"');
+    print(
+        'DEBUG: Required fields from backend: ${selectedDocType.requiredFields}');
+
+    // Check backend required fields first
+    final isRequired = selectedDocType.isFieldRequired(fieldName);
+
+    // TEMPORARY FIX: If backend doesn't have requiredFields configured,
+    // manually check for First Time Job Seeker variants
+    if (!isRequired &&
+        (selectedDocType.name == 'First-time Job Seeker' ||
+            selectedDocType.name == 'First Time Job Seeker Form') &&
+        (fieldName == 'eduAttainment' || fieldName == 'eduCourse')) {
+      print(
+          'DEBUG: ✓ OVERRIDE - $fieldName IS REQUIRED for job seeker form (backend config missing)');
+      return true;
+    }
+
+    print('DEBUG: Result - $fieldName required: $isRequired');
+    print('DEBUG: ============================================');
+
+    return isRequired;
   }
 
   @override
@@ -494,11 +562,11 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                             children: [
                                                               TextFormField(
                                                                 controller:
-                                                                    _nameController,
+                                                                    _lastNameController,
                                                                 decoration:
                                                                     InputDecoration(
                                                                   labelText:
-                                                                      'Full Name',
+                                                                      'Last Name',
                                                                   border:
                                                                       OutlineInputBorder(
                                                                     borderRadius:
@@ -517,6 +585,58 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                                             v.isEmpty)
                                                                         ? 'Required'
                                                                         : null,
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 8),
+                                                              TextFormField(
+                                                                controller:
+                                                                    _firstNameController,
+                                                                decoration:
+                                                                    InputDecoration(
+                                                                  labelText:
+                                                                      'First Name',
+                                                                  border:
+                                                                      OutlineInputBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius
+                                                                            .circular(8),
+                                                                  ),
+                                                                  contentPadding: const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          12,
+                                                                      vertical:
+                                                                          12),
+                                                                ),
+                                                                validator: (v) =>
+                                                                    (v == null ||
+                                                                            v.isEmpty)
+                                                                        ? 'Required'
+                                                                        : null,
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 8),
+                                                              TextFormField(
+                                                                controller:
+                                                                    _middleInitialController,
+                                                                decoration:
+                                                                    InputDecoration(
+                                                                  labelText:
+                                                                      'Middle Initial (Optional)',
+                                                                  border:
+                                                                      OutlineInputBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius
+                                                                            .circular(8),
+                                                                  ),
+                                                                  contentPadding: const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          12,
+                                                                      vertical:
+                                                                          12),
+                                                                ),
+                                                                maxLength: 1,
                                                               ),
                                                               const SizedBox(
                                                                   height: 8),
@@ -611,52 +731,74 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                               ),
                                                               const SizedBox(
                                                                   height: 8),
-                                                              TextFormField(
-                                                                controller:
-                                                                    _eduAttainController,
-                                                                decoration:
-                                                                    InputDecoration(
-                                                                  labelText:
-                                                                      'Educational Attainment',
-                                                                  border:
-                                                                      OutlineInputBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
+                                                              // Educational Attainment - Only show if required by document type
+                                                              if (_isFieldRequired(
+                                                                  'eduAttainment'))
+                                                                TextFormField(
+                                                                  controller:
+                                                                      _eduAttainController,
+                                                                  decoration:
+                                                                      InputDecoration(
+                                                                    labelText:
+                                                                        'Educational Attainment *',
+                                                                    border:
+                                                                        OutlineInputBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              8),
+                                                                    ),
+                                                                    contentPadding: const EdgeInsets
+                                                                        .symmetric(
+                                                                        horizontal:
+                                                                            12,
+                                                                        vertical:
+                                                                            12),
                                                                   ),
-                                                                  contentPadding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          12),
+                                                                  validator: (v) => _isFieldRequired(
+                                                                              'eduAttainment') &&
+                                                                          (v == null ||
+                                                                              v.isEmpty)
+                                                                      ? 'Required for this document type'
+                                                                      : null,
                                                                 ),
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 8),
-                                                              TextFormField(
-                                                                controller:
-                                                                    _eduCourseController,
-                                                                decoration:
-                                                                    InputDecoration(
-                                                                  labelText:
-                                                                      'Educational Course',
-                                                                  border:
-                                                                      OutlineInputBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
+                                                              if (_isFieldRequired(
+                                                                  'eduAttainment'))
+                                                                const SizedBox(
+                                                                    height: 8),
+                                                              // Educational Course - Only show if required by document type
+                                                              if (_isFieldRequired(
+                                                                  'eduCourse'))
+                                                                TextFormField(
+                                                                  controller:
+                                                                      _eduCourseController,
+                                                                  decoration:
+                                                                      InputDecoration(
+                                                                    labelText:
+                                                                        'Educational Course *',
+                                                                    border:
+                                                                        OutlineInputBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              8),
+                                                                    ),
+                                                                    contentPadding: const EdgeInsets
+                                                                        .symmetric(
+                                                                        horizontal:
+                                                                            12,
+                                                                        vertical:
+                                                                            12),
                                                                   ),
-                                                                  contentPadding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          12),
+                                                                  validator: (v) => _isFieldRequired(
+                                                                              'eduCourse') &&
+                                                                          (v == null ||
+                                                                              v.isEmpty)
+                                                                      ? 'Required for this document type'
+                                                                      : null,
                                                                 ),
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 8),
+                                                              if (_isFieldRequired(
+                                                                  'eduCourse'))
+                                                                const SizedBox(
+                                                                    height: 8),
                                                               TextFormField(
                                                                 controller:
                                                                     _ageController,
@@ -732,7 +874,7 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                                         'Barangay Clearance',
                                                                         'Business Permit',
                                                                         'Certificate of Indigency',
-                                                                        'First Time Job Seeker Form'
+                                                                        'First-time Job Seeker'
                                                                       ]
                                                                         .map((d) => DropdownMenuItem(
                                                                             value:
@@ -749,9 +891,11 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                                 onChanged: (v) {
                                                                   if (v !=
                                                                       null) {
-                                                                    setState(() =>
-                                                                        docType =
-                                                                            v);
+                                                                    setState(
+                                                                        () {
+                                                                      docType =
+                                                                          v;
+                                                                    });
                                                                   }
                                                                 },
                                                               ),
@@ -886,8 +1030,13 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                                           // Submit request to backend
                                                                           final response =
                                                                               await _requestService.createRequestWithImage(
-                                                                            fullName:
-                                                                                _nameController.text,
+                                                                            lastName:
+                                                                                _lastNameController.text,
+                                                                            firstName:
+                                                                                _firstNameController.text,
+                                                                            middleInitial: _middleInitialController.text.isEmpty
+                                                                                ? null
+                                                                                : _middleInitialController.text,
                                                                             contactNumber:
                                                                                 _contactController.text,
                                                                             address:
@@ -991,7 +1140,9 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                                                       onPressed: () {
                                                                                         Navigator.of(dialogContext).pop();
                                                                                         // Clear form
-                                                                                        _nameController.clear();
+                                                                                        _lastNameController.clear();
+                                                                                        _firstNameController.clear();
+                                                                                        _middleInitialController.clear();
                                                                                         _contactController.clear();
                                                                                         _addressController.clear();
                                                                                         _purposeController.clear();
@@ -1367,7 +1518,7 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                                               height: 12),
                                                                           _buildStatusRow(
                                                                               'Name',
-                                                                              foundRequest!['fullName'] ?? '-'),
+                                                                              _buildFullName(foundRequest!)),
                                                                           const SizedBox(
                                                                               height: 12),
                                                                           const Text(
@@ -1535,6 +1686,18 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
     );
   }
 
+  String _buildFullName(Map<String, dynamic> request) {
+    final firstName = request['firstName'] ?? '';
+    final middleInitial = request['middleInitial'];
+    final lastName = request['lastName'] ?? '';
+
+    final middle = middleInitial != null && middleInitial.toString().isNotEmpty
+        ? ' ${middleInitial}. '
+        : ' ';
+
+    return '$firstName$middle$lastName';
+  }
+
   Color _getStatusColor(String? status) {
     switch (status?.toLowerCase()) {
       case 'approved':
@@ -1573,7 +1736,9 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _lastNameController.dispose();
+    _firstNameController.dispose();
+    _middleInitialController.dispose();
     _contactController.dispose();
     _addressController.dispose();
     _purposeController.dispose();

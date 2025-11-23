@@ -78,7 +78,9 @@ class RequestService {
 
   /// Create new request with image upload (for residents)
   Future<Map<String, dynamic>> createRequestWithImage({
-    required String fullName,
+    required String lastName,
+    required String firstName,
+    String? middleInitial,
     required String contactNumber,
     required String address,
     required String purpose,
@@ -94,7 +96,8 @@ class RequestService {
     try {
       // Prepare form fields
       final fields = {
-        'fullName': fullName,
+        'lastName': lastName,
+        'firstName': firstName,
         'contactNumber': contactNumber,
         'address': address,
         'purpose': purpose,
@@ -103,6 +106,9 @@ class RequestService {
       };
 
       // Add optional fields
+      if (middleInitial != null && middleInitial.isNotEmpty) {
+        fields['middleInitial'] = middleInitial;
+      }
       if (eduAttainment != null && eduAttainment.isNotEmpty) {
         fields['eduAttainment'] = eduAttainment;
       }
