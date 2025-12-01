@@ -39,10 +39,14 @@ class ApiConfig {
   // Document types endpoints
   static const String documentTypesEndpoint = '/document-types';
 
+  // Dashboard endpoints
+  static const String dashboardEndpoint = '/admin/dashboard';
+
   // Analytics endpoints
   static const String analyticsEndpoint = '/analytics';
   static const String weeklyRequestsEndpoint = '/analytics/weekly-requests';
-  static const String weeklyComplaintsEndpoint = '/analytics/weekly-complaints';
+  static const String complaintResolutionEndpoint =
+      '/analytics/complaint-resolution';
 
   // Request timeout
   static const Duration timeout = Duration(seconds: 30);

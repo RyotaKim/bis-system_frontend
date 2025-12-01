@@ -423,14 +423,27 @@ class _RequestsPageState extends State<RequestsPage> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: DataTable(
+                                    columnSpacing: 12,
+                                    horizontalMargin: 10,
                                     columns: const [
                                       DataColumn(
-                                          label: Text('REFERENCE NUMBER')),
-                                      DataColumn(label: Text('RESIDENT NAME')),
-                                      DataColumn(label: Text('REQUEST TYPE')),
-                                      DataColumn(label: Text('DATE')),
-                                      DataColumn(label: Text('STATUS')),
-                                      DataColumn(label: Text('ACTIONS')),
+                                          label: Text('REF NO.',
+                                              style: TextStyle(fontSize: 12))),
+                                      DataColumn(
+                                          label: Text('NAME',
+                                              style: TextStyle(fontSize: 12))),
+                                      DataColumn(
+                                          label: Text('TYPE',
+                                              style: TextStyle(fontSize: 12))),
+                                      DataColumn(
+                                          label: Text('DATE',
+                                              style: TextStyle(fontSize: 12))),
+                                      DataColumn(
+                                          label: Text('STATUS',
+                                              style: TextStyle(fontSize: 12))),
+                                      DataColumn(
+                                          label: Text('ACTIONS',
+                                              style: TextStyle(fontSize: 12))),
                                     ],
                                     rows: _filteredRequests
                                         .map((request) =>
