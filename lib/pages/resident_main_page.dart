@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'login_page.dart'; // use the existing LoginPage instead of AdminLoginPage
+import 'resident_about_page.dart';
 import '../services/request_service.dart';
 import '../models/document_type_model.dart';
 
@@ -289,10 +290,13 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                         fontSize: 16)),
                                                 onTap: () {
                                                   Navigator.pop(context);
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(const SnackBar(
-                                                          content: Text(
-                                                              'About page selected')));
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          const ResidentAboutPage(),
+                                                    ),
+                                                  );
                                                 },
                                               ),
                                               ListTile(
@@ -353,9 +357,12 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                               width: 36), // spacing between nav items
                           TextButton(
                             onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('About page selected')),
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ResidentAboutPage(),
+                                ),
                               );
                             },
                             style: TextButton.styleFrom(
@@ -483,882 +490,882 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                       ),
                       const SizedBox(height: 36),
 
-                      // Action buttons (lowered and larger)
+                      // Action buttons
                       Padding(
                         padding: const EdgeInsets.only(top: 12.0),
-                        child: Wrap(
-                          spacing: 20,
-                          runSpacing: 14,
-                          alignment: WrapAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 320,
-                              height: 64,
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  // Show file-a-request dialog
-                                  final formKey = GlobalKey<FormState>();
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isMobile = constraints.maxWidth < 600;
+                            final buttonWidth = isMobile
+                                ? (constraints.maxWidth > 320
+                                    ? 320.0
+                                    : constraints.maxWidth - 40)
+                                : 320.0;
 
-                                  showDialog<void>(
-                                    context: context,
-                                    builder: (context) {
-                                      return StatefulBuilder(
-                                        builder: (context, setState) {
-                                          // Larger responsive dialog
-                                          final maxWidth =
-                                              MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.85;
-                                          final maxHeight =
-                                              MediaQuery.of(context)
-                                                      .size
-                                                      .height *
-                                                  0.85;
-                                          return Dialog(
-                                            insetPadding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 24,
-                                                    vertical: 24),
-                                            child: ConstrainedBox(
-                                              constraints: BoxConstraints(
-                                                maxWidth: maxWidth < 900
-                                                    ? maxWidth
-                                                    : 900,
-                                                maxHeight: maxHeight < 900
-                                                    ? maxHeight
-                                                    : 900,
-                                              ),
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(16.0),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    // Title
-                                                    const Padding(
-                                                      padding: EdgeInsets.only(
-                                                          bottom: 8.0),
-                                                      child: Text(
-                                                          'File a Request',
-                                                          style: TextStyle(
-                                                              fontSize: 20,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold)),
-                                                    ),
+                            return Wrap(
+                              spacing: 20,
+                              runSpacing: 14,
+                              alignment: WrapAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: buttonWidth,
+                                  height: isMobile ? 56 : 64,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      // Show file-a-request dialog
+                                      final formKey = GlobalKey<FormState>();
 
-                                                    // Form area (scrollable if tall)
-                                                    Expanded(
-                                                      child:
-                                                          SingleChildScrollView(
-                                                        child: Form(
-                                                          key: formKey,
-                                                          child: Column(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .min,
-                                                            children: [
-                                                              TextFormField(
-                                                                controller:
-                                                                    _lastNameController,
-                                                                decoration:
-                                                                    InputDecoration(
-                                                                  labelText:
-                                                                      'Last Name',
-                                                                  border:
-                                                                      OutlineInputBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
-                                                                  ),
-                                                                  contentPadding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          12),
-                                                                ),
-                                                                validator: (v) =>
-                                                                    (v == null ||
-                                                                            v.isEmpty)
-                                                                        ? 'Required'
-                                                                        : null,
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 8),
-                                                              TextFormField(
-                                                                controller:
-                                                                    _firstNameController,
-                                                                decoration:
-                                                                    InputDecoration(
-                                                                  labelText:
-                                                                      'First Name',
-                                                                  border:
-                                                                      OutlineInputBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
-                                                                  ),
-                                                                  contentPadding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          12),
-                                                                ),
-                                                                validator: (v) =>
-                                                                    (v == null ||
-                                                                            v.isEmpty)
-                                                                        ? 'Required'
-                                                                        : null,
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 8),
-                                                              TextFormField(
-                                                                controller:
-                                                                    _middleInitialController,
-                                                                decoration:
-                                                                    InputDecoration(
-                                                                  labelText:
-                                                                      'Middle Initial (Optional)',
-                                                                  border:
-                                                                      OutlineInputBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
-                                                                  ),
-                                                                  contentPadding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          12),
-                                                                ),
-                                                                maxLength: 1,
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 8),
-                                                              TextFormField(
-                                                                controller:
-                                                                    _contactController,
-                                                                decoration:
-                                                                    InputDecoration(
-                                                                  labelText:
-                                                                      'Contact Number',
-                                                                  border:
-                                                                      OutlineInputBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
-                                                                  ),
-                                                                  contentPadding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          12),
-                                                                ),
-                                                                keyboardType:
-                                                                    TextInputType
-                                                                        .phone,
-                                                                validator: (v) {
-                                                                  // Basic validation for contact number
-                                                                  if (v ==
-                                                                          null ||
-                                                                      v
-                                                                          .isEmpty) {
-                                                                    return 'Required';
-                                                                  } else if (v
-                                                                          .length <
-                                                                      10) {
-                                                                    return 'Invalid number';
-                                                                  }
-                                                                  return null;
-                                                                },
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 8),
-                                                              TextFormField(
-                                                                controller:
-                                                                    _addressController,
-                                                                decoration:
-                                                                    InputDecoration(
-                                                                  labelText:
-                                                                      'Address',
-                                                                  border:
-                                                                      OutlineInputBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
-                                                                  ),
-                                                                  contentPadding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          12),
-                                                                ),
-                                                                validator: (v) =>
-                                                                    (v == null ||
-                                                                            v.isEmpty)
-                                                                        ? 'Required'
-                                                                        : null,
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 8),
-                                                              TextFormField(
-                                                                controller:
-                                                                    _purposeController,
-                                                                decoration:
-                                                                    InputDecoration(
-                                                                  labelText:
-                                                                      'Purpose',
-                                                                  border:
-                                                                      OutlineInputBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
-                                                                  ),
-                                                                  contentPadding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          12),
+                                      showDialog<void>(
+                                        context: context,
+                                        builder: (context) {
+                                          return StatefulBuilder(
+                                            builder: (context, setState) {
+                                              // Responsive sizing
+                                              final screenWidth =
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .width;
+                                              final screenHeight =
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .height;
+                                              final isMobile =
+                                                  screenWidth < 600;
+
+                                              return Dialog(
+                                                insetPadding:
+                                                    EdgeInsets.symmetric(
+                                                        horizontal:
+                                                            isMobile ? 16 : 40,
+                                                        vertical:
+                                                            isMobile ? 20 : 40),
+                                                child: Container(
+                                                  width: isMobile
+                                                      ? screenWidth - 32
+                                                      : (screenWidth > 900
+                                                          ? 900
+                                                          : screenWidth * 0.85),
+                                                  constraints: BoxConstraints(
+                                                    maxHeight: screenHeight -
+                                                        (isMobile ? 40 : 80),
+                                                  ),
+                                                  child: Padding(
+                                                    padding: EdgeInsets.all(
+                                                        isMobile ? 16.0 : 24.0),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        // Title with close button
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Expanded(
+                                                              child: Text(
+                                                                'File a Request',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize:
+                                                                      isMobile
+                                                                          ? 18
+                                                                          : 22,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
                                                                 ),
                                                               ),
-                                                              const SizedBox(
-                                                                  height: 8),
-                                                              // Educational Attainment - Only show if required by document type
-                                                              if (_isFieldRequired(
-                                                                  'eduAttainment'))
-                                                                TextFormField(
-                                                                  controller:
-                                                                      _eduAttainController,
-                                                                  decoration:
-                                                                      InputDecoration(
-                                                                    labelText:
-                                                                        'Educational Attainment *',
-                                                                    border:
-                                                                        OutlineInputBorder(
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              8),
+                                                            ),
+                                                            IconButton(
+                                                              icon: const Icon(
+                                                                  Icons.close),
+                                                              onPressed: () =>
+                                                                  Navigator.pop(
+                                                                      context),
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .zero,
+                                                              constraints:
+                                                                  const BoxConstraints(),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        SizedBox(
+                                                            height: isMobile
+                                                                ? 8
+                                                                : 12),
+
+                                                        // Form area (scrollable)
+                                                        Expanded(
+                                                          child:
+                                                              SingleChildScrollView(
+                                                            padding:
+                                                                EdgeInsets.only(
+                                                              bottom: MediaQuery
+                                                                      .of(context)
+                                                                  .viewInsets
+                                                                  .bottom,
+                                                            ),
+                                                            child: Form(
+                                                              key: formKey,
+                                                              child: Column(
+                                                                mainAxisSize:
+                                                                    MainAxisSize
+                                                                        .min,
+                                                                children: [
+                                                                  TextFormField(
+                                                                    controller:
+                                                                        _lastNameController,
+                                                                    decoration:
+                                                                        InputDecoration(
+                                                                      labelText:
+                                                                          'Last Name',
+                                                                      border:
+                                                                          OutlineInputBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(8),
+                                                                      ),
+                                                                      contentPadding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              12,
+                                                                          vertical:
+                                                                              12),
                                                                     ),
-                                                                    contentPadding: const EdgeInsets
-                                                                        .symmetric(
-                                                                        horizontal:
-                                                                            12,
-                                                                        vertical:
-                                                                            12),
+                                                                    validator: (v) => (v ==
+                                                                                null ||
+                                                                            v.isEmpty)
+                                                                        ? 'Required'
+                                                                        : null,
                                                                   ),
-                                                                  validator: (v) => _isFieldRequired(
-                                                                              'eduAttainment') &&
-                                                                          (v == null ||
-                                                                              v.isEmpty)
-                                                                      ? 'Required for this document type'
-                                                                      : null,
-                                                                ),
-                                                              if (_isFieldRequired(
-                                                                  'eduAttainment'))
-                                                                const SizedBox(
-                                                                    height: 8),
-                                                              // Educational Course - Only show if required by document type
-                                                              if (_isFieldRequired(
-                                                                  'eduCourse'))
-                                                                TextFormField(
-                                                                  controller:
-                                                                      _eduCourseController,
-                                                                  decoration:
-                                                                      InputDecoration(
-                                                                    labelText:
-                                                                        'Educational Course *',
-                                                                    border:
-                                                                        OutlineInputBorder(
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              8),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          8),
+                                                                  TextFormField(
+                                                                    controller:
+                                                                        _firstNameController,
+                                                                    decoration:
+                                                                        InputDecoration(
+                                                                      labelText:
+                                                                          'First Name',
+                                                                      border:
+                                                                          OutlineInputBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(8),
+                                                                      ),
+                                                                      contentPadding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              12,
+                                                                          vertical:
+                                                                              12),
                                                                     ),
-                                                                    contentPadding: const EdgeInsets
-                                                                        .symmetric(
-                                                                        horizontal:
-                                                                            12,
-                                                                        vertical:
-                                                                            12),
+                                                                    validator: (v) => (v ==
+                                                                                null ||
+                                                                            v.isEmpty)
+                                                                        ? 'Required'
+                                                                        : null,
                                                                   ),
-                                                                  validator: (v) => _isFieldRequired(
-                                                                              'eduCourse') &&
-                                                                          (v == null ||
-                                                                              v.isEmpty)
-                                                                      ? 'Required for this document type'
-                                                                      : null,
-                                                                ),
-                                                              if (_isFieldRequired(
-                                                                  'eduCourse'))
-                                                                const SizedBox(
-                                                                    height: 8),
-                                                              TextFormField(
-                                                                controller:
-                                                                    _ageController,
-                                                                decoration:
-                                                                    InputDecoration(
-                                                                  labelText:
-                                                                      'Age',
-                                                                  border:
-                                                                      OutlineInputBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          8),
+                                                                  TextFormField(
+                                                                    controller:
+                                                                        _middleInitialController,
+                                                                    decoration:
+                                                                        InputDecoration(
+                                                                      labelText:
+                                                                          'Middle Initial (Optional)',
+                                                                      border:
+                                                                          OutlineInputBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(8),
+                                                                      ),
+                                                                      contentPadding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              12,
+                                                                          vertical:
+                                                                              12),
+                                                                    ),
+                                                                    maxLength:
+                                                                        1,
                                                                   ),
-                                                                  contentPadding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          8),
+                                                                  TextFormField(
+                                                                    controller:
+                                                                        _contactController,
+                                                                    decoration:
+                                                                        InputDecoration(
+                                                                      labelText:
+                                                                          'Contact Number',
+                                                                      border:
+                                                                          OutlineInputBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(8),
+                                                                      ),
+                                                                      contentPadding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              12,
+                                                                          vertical:
+                                                                              12),
+                                                                    ),
+                                                                    keyboardType:
+                                                                        TextInputType
+                                                                            .phone,
+                                                                    validator:
+                                                                        (v) {
+                                                                      // Basic validation for contact number
+                                                                      if (v ==
+                                                                              null ||
+                                                                          v
+                                                                              .isEmpty) {
+                                                                        return 'Required';
+                                                                      } else if (v
+                                                                              .length <
+                                                                          10) {
+                                                                        return 'Invalid number';
+                                                                      }
+                                                                      return null;
+                                                                    },
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          8),
+                                                                  TextFormField(
+                                                                    controller:
+                                                                        _addressController,
+                                                                    decoration:
+                                                                        InputDecoration(
+                                                                      labelText:
+                                                                          'Address',
+                                                                      border:
+                                                                          OutlineInputBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(8),
+                                                                      ),
+                                                                      contentPadding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              12,
+                                                                          vertical:
+                                                                              12),
+                                                                    ),
+                                                                    validator: (v) => (v ==
+                                                                                null ||
+                                                                            v.isEmpty)
+                                                                        ? 'Required'
+                                                                        : null,
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          8),
+                                                                  TextFormField(
+                                                                    controller:
+                                                                        _purposeController,
+                                                                    decoration:
+                                                                        InputDecoration(
+                                                                      labelText:
+                                                                          'Purpose',
+                                                                      border:
+                                                                          OutlineInputBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(8),
+                                                                      ),
+                                                                      contentPadding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              12,
+                                                                          vertical:
+                                                                              12),
+                                                                    ),
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          8),
+                                                                  // Educational Attainment - Only show if required by document type
+                                                                  if (_isFieldRequired(
+                                                                      'eduAttainment'))
+                                                                    TextFormField(
+                                                                      controller:
+                                                                          _eduAttainController,
+                                                                      decoration:
+                                                                          InputDecoration(
+                                                                        labelText:
+                                                                            'Educational Attainment *',
+                                                                        border:
+                                                                            OutlineInputBorder(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(8),
+                                                                        ),
+                                                                        contentPadding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            horizontal:
+                                                                                12,
+                                                                            vertical:
+                                                                                12),
+                                                                      ),
+                                                                      validator: (v) => _isFieldRequired('eduAttainment') &&
+                                                                              (v == null || v.isEmpty)
+                                                                          ? 'Required for this document type'
+                                                                          : null,
+                                                                    ),
+                                                                  if (_isFieldRequired(
+                                                                      'eduAttainment'))
+                                                                    const SizedBox(
+                                                                        height:
+                                                                            8),
+                                                                  // Educational Course - Only show if required by document type
+                                                                  if (_isFieldRequired(
+                                                                      'eduCourse'))
+                                                                    TextFormField(
+                                                                      controller:
+                                                                          _eduCourseController,
+                                                                      decoration:
+                                                                          InputDecoration(
+                                                                        labelText:
+                                                                            'Educational Course *',
+                                                                        border:
+                                                                            OutlineInputBorder(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(8),
+                                                                        ),
+                                                                        contentPadding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            horizontal:
+                                                                                12,
+                                                                            vertical:
+                                                                                12),
+                                                                      ),
+                                                                      validator: (v) => _isFieldRequired('eduCourse') &&
+                                                                              (v == null || v.isEmpty)
+                                                                          ? 'Required for this document type'
+                                                                          : null,
+                                                                    ),
+                                                                  if (_isFieldRequired(
+                                                                      'eduCourse'))
+                                                                    const SizedBox(
+                                                                        height:
+                                                                            8),
+                                                                  TextFormField(
+                                                                    controller:
+                                                                        _ageController,
+                                                                    decoration:
+                                                                        InputDecoration(
+                                                                      labelText:
+                                                                          'Age',
+                                                                      border:
+                                                                          OutlineInputBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(8),
+                                                                      ),
+                                                                      contentPadding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              12,
+                                                                          vertical:
+                                                                              12),
+                                                                    ),
+                                                                    keyboardType:
+                                                                        TextInputType
+                                                                            .number,
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          8),
+                                                                  TextFormField(
+                                                                    controller:
+                                                                        _maritalController,
+                                                                    decoration:
+                                                                        InputDecoration(
+                                                                      labelText:
+                                                                          'Marital Status',
+                                                                      border:
+                                                                          OutlineInputBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(8),
+                                                                      ),
+                                                                      contentPadding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              12,
+                                                                          vertical:
+                                                                              12),
+                                                                    ),
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          8),
+                                                                  DropdownButtonFormField<
+                                                                      String>(
+                                                                    value:
+                                                                        docType,
+                                                                    decoration:
+                                                                        InputDecoration(
+                                                                      labelText:
+                                                                          'Type of Document',
+                                                                      border:
+                                                                          OutlineInputBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(8),
+                                                                      ),
+                                                                      contentPadding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              12,
+                                                                          vertical:
+                                                                              12),
+                                                                    ),
+                                                                    items: _documentTypes
+                                                                            .isEmpty
+                                                                        ? <String>[
+                                                                            'Barangay Clearance',
+                                                                            'Business Permit',
+                                                                            'Certificate of Indigency',
+                                                                            'First-time Job Seeker'
+                                                                          ]
+                                                                            .map((d) => DropdownMenuItem(
+                                                                                value:
+                                                                                    d,
+                                                                                child: Text(
+                                                                                    d)))
+                                                                            .toList()
+                                                                        : _documentTypes
+                                                                            .map((dt) =>
+                                                                                DropdownMenuItem(value: dt.name, child: Text(dt.name)))
+                                                                            .toList(),
+                                                                    onChanged:
+                                                                        (v) {
+                                                                      if (v !=
+                                                                          null) {
+                                                                        setState(
+                                                                            () {
+                                                                          docType =
+                                                                              v;
+                                                                        });
+                                                                      }
+                                                                    },
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
                                                                           12),
-                                                                ),
-                                                                keyboardType:
-                                                                    TextInputType
-                                                                        .number,
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 8),
-                                                              TextFormField(
-                                                                controller:
-                                                                    _maritalController,
-                                                                decoration:
-                                                                    InputDecoration(
-                                                                  labelText:
-                                                                      'Marital Status',
-                                                                  border:
-                                                                      OutlineInputBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
-                                                                  ),
-                                                                  contentPadding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          12),
-                                                                ),
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 8),
-                                                              DropdownButtonFormField<
-                                                                  String>(
-                                                                value: docType,
-                                                                decoration:
-                                                                    InputDecoration(
-                                                                  labelText:
-                                                                      'Type of Document',
-                                                                  border:
-                                                                      OutlineInputBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
-                                                                  ),
-                                                                  contentPadding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          12),
-                                                                ),
-                                                                items: _documentTypes
-                                                                        .isEmpty
-                                                                    ? <String>[
-                                                                        'Barangay Clearance',
-                                                                        'Business Permit',
-                                                                        'Certificate of Indigency',
-                                                                        'First-time Job Seeker'
-                                                                      ]
-                                                                        .map((d) => DropdownMenuItem(
-                                                                            value:
-                                                                                d,
-                                                                            child: Text(
-                                                                                d)))
-                                                                        .toList()
-                                                                    : _documentTypes
-                                                                        .map((dt) => DropdownMenuItem(
-                                                                            value:
-                                                                                dt.name,
-                                                                            child: Text(dt.name)))
-                                                                        .toList(),
-                                                                onChanged: (v) {
-                                                                  if (v !=
-                                                                      null) {
-                                                                    setState(
-                                                                        () {
-                                                                      docType =
-                                                                          v;
-                                                                    });
-                                                                  }
-                                                                },
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 12),
-                                                              // Instructional note for the upload field
-                                                              const Padding(
-                                                                padding: EdgeInsets
-                                                                    .only(
+                                                                  // Instructional note for the upload field
+                                                                  const Padding(
+                                                                    padding: EdgeInsets.only(
                                                                         bottom:
                                                                             8.0),
-                                                                child: Text(
-                                                                  'Upload a picture of your valid id that certifies your residency.',
-                                                                  style:
-                                                                      TextStyle(
-                                                                    fontSize:
-                                                                        13,
-                                                                    color: Colors
-                                                                        .black54,
-                                                                    fontStyle:
-                                                                        FontStyle
-                                                                            .italic,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                              Row(
-                                                                children: [
-                                                                  Expanded(
                                                                     child: Text(
-                                                                      _selectedImageName ??
-                                                                          'No image selected',
-                                                                      style: TextStyle(
-                                                                          color: _selectedImageName == null
-                                                                              ? Colors.grey
-                                                                              : Colors.black),
-                                                                      overflow:
-                                                                          TextOverflow
-                                                                              .ellipsis,
+                                                                      'Upload a picture of your valid id that certifies your residency.',
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontSize:
+                                                                            13,
+                                                                        color: Colors
+                                                                            .black54,
+                                                                        fontStyle:
+                                                                            FontStyle.italic,
+                                                                      ),
                                                                     ),
                                                                   ),
-                                                                  TextButton
-                                                                      .icon(
-                                                                    onPressed:
-                                                                        _pickImage,
-                                                                    icon: const Icon(
-                                                                        Icons
-                                                                            .upload_file,
-                                                                        size:
-                                                                            18),
-                                                                    label: const Text(
-                                                                        'Upload'),
+                                                                  Row(
+                                                                    children: [
+                                                                      Expanded(
+                                                                        child:
+                                                                            Text(
+                                                                          _selectedImageName ??
+                                                                              'No image selected',
+                                                                          style:
+                                                                              TextStyle(color: _selectedImageName == null ? Colors.grey : Colors.black),
+                                                                          overflow:
+                                                                              TextOverflow.ellipsis,
+                                                                        ),
+                                                                      ),
+                                                                      TextButton
+                                                                          .icon(
+                                                                        onPressed:
+                                                                            _pickImage,
+                                                                        icon: const Icon(
+                                                                            Icons
+                                                                                .upload_file,
+                                                                            size:
+                                                                                18),
+                                                                        label: const Text(
+                                                                            'Upload'),
+                                                                      ),
+                                                                    ],
                                                                   ),
                                                                 ],
                                                               ),
-                                                            ],
+                                                            ),
                                                           ),
                                                         ),
-                                                      ),
-                                                    ),
 
-                                                    const SizedBox(height: 12),
-
-                                                    // Actions
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.end,
-                                                      children: [
-                                                        TextButton(
-                                                          onPressed: () =>
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .pop(),
-                                                          child: const Text(
-                                                              'Cancel'),
-                                                        ),
                                                         const SizedBox(
-                                                            width: 8),
-                                                        ElevatedButton(
-                                                          onPressed:
-                                                              _isSubmitting
-                                                                  ? null
-                                                                  : () async {
-                                                                      if (formKey
-                                                                              .currentState
-                                                                              ?.validate() ??
-                                                                          false) {
-                                                                        // Validate image upload (check both web bytes and mobile file)
-                                                                        if (_selectedImage ==
-                                                                                null &&
-                                                                            _webImageBytes ==
-                                                                                null) {
-                                                                          ScaffoldMessenger.of(context)
-                                                                              .showSnackBar(
-                                                                            const SnackBar(
-                                                                              content: Text('Please upload a valid ID image'),
-                                                                              backgroundColor: Colors.red,
-                                                                            ),
-                                                                          );
-                                                                          return;
-                                                                        }
+                                                            height: 12),
 
-                                                                        setState(() =>
-                                                                            _isSubmitting =
-                                                                                true);
-
-                                                                        try {
-                                                                          // Check if document types are loaded
-                                                                          if (_documentTypes
-                                                                              .isEmpty) {
-                                                                            if (context.mounted) {
+                                                        // Actions
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .end,
+                                                          children: [
+                                                            TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.of(
+                                                                          context)
+                                                                      .pop(),
+                                                              child: const Text(
+                                                                  'Cancel'),
+                                                            ),
+                                                            const SizedBox(
+                                                                width: 8),
+                                                            ElevatedButton(
+                                                              onPressed:
+                                                                  _isSubmitting
+                                                                      ? null
+                                                                      : () async {
+                                                                          if (formKey.currentState?.validate() ??
+                                                                              false) {
+                                                                            // Validate image upload (check both web bytes and mobile file)
+                                                                            if (_selectedImage == null &&
+                                                                                _webImageBytes == null) {
                                                                               ScaffoldMessenger.of(context).showSnackBar(
                                                                                 const SnackBar(
-                                                                                  content: Text('Backend connection failed. Please ensure the backend server is running at http://localhost:3000'),
+                                                                                  content: Text('Please upload a valid ID image'),
                                                                                   backgroundColor: Colors.red,
-                                                                                  duration: Duration(seconds: 5),
                                                                                 ),
                                                                               );
+                                                                              return;
                                                                             }
-                                                                            return;
-                                                                          }
 
-                                                                          // Find the matching document type from backend
-                                                                          final selectedDocType =
-                                                                              _documentTypes.firstWhere(
-                                                                            (dt) =>
-                                                                                dt.name ==
-                                                                                docType,
-                                                                            orElse: () =>
-                                                                                _documentTypes.first,
-                                                                          );
+                                                                            setState(() =>
+                                                                                _isSubmitting = true);
 
-                                                                          // Submit request to backend
-                                                                          final response =
-                                                                              await _requestService.createRequestWithImage(
-                                                                            lastName:
-                                                                                _lastNameController.text,
-                                                                            firstName:
-                                                                                _firstNameController.text,
-                                                                            middleInitial: _middleInitialController.text.isEmpty
-                                                                                ? null
-                                                                                : _middleInitialController.text,
-                                                                            contactNumber:
-                                                                                _contactController.text,
-                                                                            address:
-                                                                                _addressController.text,
-                                                                            purpose:
-                                                                                _purposeController.text,
-                                                                            age:
-                                                                                int.parse(_ageController.text),
-                                                                            docTypeId:
-                                                                                selectedDocType.id,
-                                                                            idImage:
-                                                                                _selectedImage,
-                                                                            idImageBytes:
-                                                                                _webImageBytes,
-                                                                            idImageName:
-                                                                                _selectedImageName,
-                                                                            eduAttainment: _eduAttainController.text.isEmpty
-                                                                                ? null
-                                                                                : _eduAttainController.text,
-                                                                            eduCourse: _eduCourseController.text.isEmpty
-                                                                                ? null
-                                                                                : _eduCourseController.text,
-                                                                            maritalStatus: _maritalController.text.isEmpty
-                                                                                ? null
-                                                                                : _maritalController.text,
-                                                                          );
+                                                                            try {
+                                                                              // Check if document types are loaded
+                                                                              if (_documentTypes.isEmpty) {
+                                                                                if (context.mounted) {
+                                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                                    const SnackBar(
+                                                                                      content: Text('Backend connection failed. Please ensure the backend server is running at http://localhost:3000'),
+                                                                                      backgroundColor: Colors.red,
+                                                                                      duration: Duration(seconds: 5),
+                                                                                    ),
+                                                                                  );
+                                                                                }
+                                                                                return;
+                                                                              }
 
-                                                                          final refNo =
-                                                                              response['ref'] ?? 'N/A';
+                                                                              // Find the matching document type from backend
+                                                                              final selectedDocType = _documentTypes.firstWhere(
+                                                                                (dt) => dt.name == docType,
+                                                                                orElse: () => _documentTypes.first,
+                                                                              );
 
-                                                                          // Close the form dialog
-                                                                          if (context
-                                                                              .mounted) {
-                                                                            Navigator.of(context).pop();
+                                                                              // Submit request to backend
+                                                                              final response = await _requestService.createRequestWithImage(
+                                                                                lastName: _lastNameController.text,
+                                                                                firstName: _firstNameController.text,
+                                                                                middleInitial: _middleInitialController.text.isEmpty ? null : _middleInitialController.text,
+                                                                                contactNumber: _contactController.text,
+                                                                                address: _addressController.text,
+                                                                                purpose: _purposeController.text,
+                                                                                age: int.parse(_ageController.text),
+                                                                                docTypeId: selectedDocType.id,
+                                                                                idImage: _selectedImage,
+                                                                                idImageBytes: _webImageBytes,
+                                                                                idImageName: _selectedImageName,
+                                                                                eduAttainment: _eduAttainController.text.isEmpty ? null : _eduAttainController.text,
+                                                                                eduCourse: _eduCourseController.text.isEmpty ? null : _eduCourseController.text,
+                                                                                maritalStatus: _maritalController.text.isEmpty ? null : _maritalController.text,
+                                                                              );
 
-                                                                            // Show success dialog with reference number
-                                                                            showDialog(
-                                                                              context: context,
-                                                                              barrierDismissible: false,
-                                                                              builder: (BuildContext dialogContext) {
-                                                                                return AlertDialog(
-                                                                                  title: const Row(
-                                                                                    children: [
-                                                                                      Icon(
-                                                                                        Icons.check_circle,
-                                                                                        color: Colors.green,
-                                                                                        size: 28,
-                                                                                      ),
-                                                                                      SizedBox(width: 8),
-                                                                                      Text('Request Submitted'),
-                                                                                    ],
-                                                                                  ),
-                                                                                  content: Column(
-                                                                                    mainAxisSize: MainAxisSize.min,
-                                                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                                                    children: [
-                                                                                      const Text(
-                                                                                        'Your reference number is:',
-                                                                                        style: TextStyle(
-                                                                                          fontSize: 14,
-                                                                                          color: Colors.black87,
-                                                                                        ),
-                                                                                      ),
-                                                                                      const SizedBox(height: 12),
-                                                                                      Container(
-                                                                                        padding: const EdgeInsets.all(16),
-                                                                                        decoration: BoxDecoration(
-                                                                                          color: lightGreen,
-                                                                                          borderRadius: BorderRadius.circular(8),
-                                                                                          border: Border.all(
-                                                                                            color: green,
-                                                                                            width: 2,
+                                                                              final refNo = response['ref'] ?? 'N/A';
+
+                                                                              // Close the form dialog
+                                                                              if (context.mounted) {
+                                                                                Navigator.of(context).pop();
+
+                                                                                // Show success dialog with reference number
+                                                                                showDialog(
+                                                                                  context: context,
+                                                                                  barrierDismissible: false,
+                                                                                  builder: (BuildContext dialogContext) {
+                                                                                    return AlertDialog(
+                                                                                      title: const Row(
+                                                                                        children: [
+                                                                                          Icon(
+                                                                                            Icons.check_circle,
+                                                                                            color: Colors.green,
+                                                                                            size: 28,
                                                                                           ),
-                                                                                        ),
-                                                                                        child: Center(
-                                                                                          child: Text(
-                                                                                            refNo,
-                                                                                            style: const TextStyle(
-                                                                                              fontSize: 24,
-                                                                                              fontWeight: FontWeight.bold,
-                                                                                              color: Color(0xFF1B5E20),
-                                                                                              letterSpacing: 2,
+                                                                                          SizedBox(width: 8),
+                                                                                          Text('Request Submitted'),
+                                                                                        ],
+                                                                                      ),
+                                                                                      content: Column(
+                                                                                        mainAxisSize: MainAxisSize.min,
+                                                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                                                        children: [
+                                                                                          const Text(
+                                                                                            'Your reference number is:',
+                                                                                            style: TextStyle(
+                                                                                              fontSize: 14,
+                                                                                              color: Colors.black87,
+                                                                                            ),
+                                                                                          ),
+                                                                                          const SizedBox(height: 12),
+                                                                                          Container(
+                                                                                            padding: const EdgeInsets.all(16),
+                                                                                            decoration: BoxDecoration(
+                                                                                              color: lightGreen,
+                                                                                              borderRadius: BorderRadius.circular(8),
+                                                                                              border: Border.all(
+                                                                                                color: green,
+                                                                                                width: 2,
+                                                                                              ),
+                                                                                            ),
+                                                                                            child: Center(
+                                                                                              child: Text(
+                                                                                                refNo,
+                                                                                                style: const TextStyle(
+                                                                                                  fontSize: 24,
+                                                                                                  fontWeight: FontWeight.bold,
+                                                                                                  color: Color(0xFF1B5E20),
+                                                                                                  letterSpacing: 2,
+                                                                                                ),
+                                                                                              ),
+                                                                                            ),
+                                                                                          ),
+                                                                                          const SizedBox(height: 16),
+                                                                                          const Text(
+                                                                                            'Take a screenshot of your reference number to check the status of your request later.',
+                                                                                            style: TextStyle(
+                                                                                              fontSize: 12,
+                                                                                              color: Colors.black54,
+                                                                                              fontStyle: FontStyle.italic,
+                                                                                            ),
+                                                                                            textAlign: TextAlign.center,
+                                                                                          ),
+                                                                                        ],
+                                                                                      ),
+                                                                                      actions: [
+                                                                                        TextButton(
+                                                                                          onPressed: () {
+                                                                                            Navigator.of(dialogContext).pop();
+                                                                                            // Clear form
+                                                                                            _lastNameController.clear();
+                                                                                            _firstNameController.clear();
+                                                                                            _middleInitialController.clear();
+                                                                                            _contactController.clear();
+                                                                                            _addressController.clear();
+                                                                                            _purposeController.clear();
+                                                                                            _eduAttainController.clear();
+                                                                                            _eduCourseController.clear();
+                                                                                            _ageController.clear();
+                                                                                            _maritalController.clear();
+                                                                                            setState(() {
+                                                                                              _selectedImage = null;
+                                                                                              _selectedImageName = null;
+                                                                                            });
+                                                                                          },
+                                                                                          child: const Text(
+                                                                                            'OK',
+                                                                                            style: TextStyle(
+                                                                                              fontSize: 16,
+                                                                                              fontWeight: FontWeight.w600,
                                                                                             ),
                                                                                           ),
                                                                                         ),
-                                                                                      ),
-                                                                                      const SizedBox(height: 16),
-                                                                                      const Text(
-                                                                                        'Take a screenshot of your reference number to check the status of your request later.',
-                                                                                        style: TextStyle(
-                                                                                          fontSize: 12,
-                                                                                          color: Colors.black54,
-                                                                                          fontStyle: FontStyle.italic,
-                                                                                        ),
-                                                                                        textAlign: TextAlign.center,
-                                                                                      ),
-                                                                                    ],
-                                                                                  ),
-                                                                                  actions: [
-                                                                                    TextButton(
-                                                                                      onPressed: () {
-                                                                                        Navigator.of(dialogContext).pop();
-                                                                                        // Clear form
-                                                                                        _lastNameController.clear();
-                                                                                        _firstNameController.clear();
-                                                                                        _middleInitialController.clear();
-                                                                                        _contactController.clear();
-                                                                                        _addressController.clear();
-                                                                                        _purposeController.clear();
-                                                                                        _eduAttainController.clear();
-                                                                                        _eduCourseController.clear();
-                                                                                        _ageController.clear();
-                                                                                        _maritalController.clear();
-                                                                                        setState(() {
-                                                                                          _selectedImage = null;
-                                                                                          _selectedImageName = null;
-                                                                                        });
-                                                                                      },
-                                                                                      child: const Text(
-                                                                                        'OK',
-                                                                                        style: TextStyle(
-                                                                                          fontSize: 16,
-                                                                                          fontWeight: FontWeight.w600,
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
+                                                                                      ],
+                                                                                    );
+                                                                                  },
                                                                                 );
-                                                                              },
-                                                                            );
+                                                                              }
+                                                                            } catch (e) {
+                                                                              if (context.mounted) {
+                                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                                                  SnackBar(
+                                                                                    content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
+                                                                                    backgroundColor: Colors.red,
+                                                                                  ),
+                                                                                );
+                                                                              }
+                                                                            } finally {
+                                                                              if (mounted) {
+                                                                                setState(() => _isSubmitting = false);
+                                                                              }
+                                                                            }
                                                                           }
-                                                                        } catch (e) {
-                                                                          if (context
-                                                                              .mounted) {
-                                                                            ScaffoldMessenger.of(context).showSnackBar(
-                                                                              SnackBar(
-                                                                                content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
-                                                                                backgroundColor: Colors.red,
-                                                                              ),
-                                                                            );
-                                                                          }
-                                                                        } finally {
-                                                                          if (mounted) {
-                                                                            setState(() =>
-                                                                                _isSubmitting = false);
-                                                                          }
-                                                                        }
-                                                                      }
-                                                                    },
-                                                          child: _isSubmitting
-                                                              ? const SizedBox(
-                                                                  width: 20,
-                                                                  height: 20,
-                                                                  child:
-                                                                      CircularProgressIndicator(
-                                                                    strokeWidth:
-                                                                        2,
-                                                                    valueColor: AlwaysStoppedAnimation<
-                                                                            Color>(
-                                                                        Colors
-                                                                            .white),
-                                                                  ),
-                                                                )
-                                                              : const Text(
-                                                                  'Submit'),
+                                                                        },
+                                                              child: _isSubmitting
+                                                                  ? const SizedBox(
+                                                                      width: 20,
+                                                                      height:
+                                                                          20,
+                                                                      child:
+                                                                          CircularProgressIndicator(
+                                                                        strokeWidth:
+                                                                            2,
+                                                                        valueColor:
+                                                                            AlwaysStoppedAnimation<Color>(Colors.white),
+                                                                      ),
+                                                                    )
+                                                                  : const Text('Submit'),
+                                                            ),
+                                                          ],
                                                         ),
                                                       ],
                                                     ),
-                                                  ],
+                                                  ),
                                                 ),
-                                              ),
-                                            ),
+                                              );
+                                            },
                                           );
                                         },
                                       );
                                     },
-                                  );
-                                },
-                                icon: const Icon(Icons.post_add,
-                                    size: 26, color: Colors.white),
-                                label: const Padding(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 12.0),
-                                  child: Text('File a Request',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700)),
+                                    icon: const Icon(Icons.post_add,
+                                        size: 26, color: Colors.white),
+                                    label: const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 12.0),
+                                      child: Text('File a Request',
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w700)),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: green,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 18),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                    ),
+                                  ),
                                 ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: green,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 18),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 320,
-                              height: 64,
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  // Show status check dialog
-                                  showDialog<void>(
-                                    context: context,
-                                    builder: (context) {
-                                      final TextEditingController
-                                          searchController =
-                                          TextEditingController();
-                                      Map<String, dynamic>? foundRequest;
-                                      bool isSearching = false;
-                                      String? errorMessage;
+                                SizedBox(
+                                  width: buttonWidth,
+                                  height: isMobile ? 56 : 64,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      // Show status check dialog
+                                      showDialog<void>(
+                                        context: context,
+                                        builder: (context) {
+                                          final TextEditingController
+                                              searchController =
+                                              TextEditingController();
+                                          Map<String, dynamic>? foundRequest;
+                                          bool isSearching = false;
+                                          String? errorMessage;
 
-                                      return StatefulBuilder(
-                                          builder: (context, setDialogState) {
-                                        return Dialog(
-                                          child: ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                              maxWidth: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.5,
-                                              maxHeight: MediaQuery.of(context)
-                                                      .size
-                                                      .height *
-                                                  0.6,
-                                            ),
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(16.0),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  const Text(
-                                                    'Check Request Status',
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  const SizedBox(height: 16),
-                                                  Row(
+                                          return StatefulBuilder(builder:
+                                              (context, setDialogState) {
+                                            final screenWidth =
+                                                MediaQuery.of(context)
+                                                    .size
+                                                    .width;
+                                            final screenHeight =
+                                                MediaQuery.of(context)
+                                                    .size
+                                                    .height;
+                                            final isMobile = screenWidth < 600;
+
+                                            return Dialog(
+                                              insetPadding:
+                                                  EdgeInsets.symmetric(
+                                                horizontal: isMobile ? 16 : 40,
+                                                vertical: isMobile ? 20 : 40,
+                                              ),
+                                              child: Container(
+                                                width: isMobile
+                                                    ? screenWidth - 32
+                                                    : (screenWidth > 800
+                                                        ? 700
+                                                        : screenWidth * 0.7),
+                                                constraints: BoxConstraints(
+                                                  maxHeight: screenHeight -
+                                                      (isMobile ? 40 : 80),
+                                                ),
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(
+                                                      isMobile ? 16.0 : 24.0),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
                                                     children: [
-                                                      Expanded(
-                                                        child: TextField(
-                                                          controller:
-                                                              searchController,
-                                                          decoration:
-                                                              const InputDecoration(
-                                                            labelText:
-                                                                'Enter Reference Number',
-                                                            hintText:
-                                                                'e.g., REQ-2025-11-00001',
-                                                            border:
-                                                                OutlineInputBorder(),
-                                                            prefixIcon: Icon(
-                                                                Icons.search),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Expanded(
+                                                            child: Text(
+                                                              'Check Request Status',
+                                                              style: TextStyle(
+                                                                fontSize:
+                                                                    isMobile
+                                                                        ? 18
+                                                                        : 22,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
                                                           ),
-                                                          onSubmitted:
-                                                              (value) async {
-                                                            if (value
-                                                                .trim()
-                                                                .isEmpty) {
-                                                              return;
-                                                            }
-
-                                                            setDialogState(() {
-                                                              isSearching =
-                                                                  true;
-                                                              errorMessage =
-                                                                  null;
-                                                              foundRequest =
-                                                                  null;
-                                                            });
-
-                                                            try {
-                                                              final result =
-                                                                  await _requestService
-                                                                      .getRequestByRefNo(
-                                                                          value
-                                                                              .trim());
-
-                                                              setDialogState(
-                                                                  () {
-                                                                foundRequest =
-                                                                    result;
-                                                                isSearching =
-                                                                    false;
-                                                              });
-                                                            } catch (e) {
-                                                              setDialogState(
-                                                                  () {
-                                                                errorMessage =
-                                                                    'Request not found. Please check the reference number.';
-                                                                foundRequest =
-                                                                    null;
-                                                                isSearching =
-                                                                    false;
-                                                              });
-                                                            }
-                                                          },
-                                                        ),
+                                                          IconButton(
+                                                            icon: const Icon(
+                                                                Icons.close),
+                                                            onPressed: () =>
+                                                                Navigator.pop(
+                                                                    context),
+                                                            padding:
+                                                                EdgeInsets.zero,
+                                                            constraints:
+                                                                const BoxConstraints(),
+                                                          ),
+                                                        ],
                                                       ),
-                                                      const SizedBox(width: 8),
-                                                      ElevatedButton(
-                                                        onPressed: isSearching
-                                                            ? null
-                                                            : () async {
-                                                                final refNo =
-                                                                    searchController
-                                                                        .text
-                                                                        .trim();
-
-                                                                if (refNo
+                                                      SizedBox(
+                                                          height: isMobile
+                                                              ? 12
+                                                              : 16),
+                                                      Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child: TextField(
+                                                              controller:
+                                                                  searchController,
+                                                              decoration:
+                                                                  const InputDecoration(
+                                                                labelText:
+                                                                    'Enter Reference Number',
+                                                                hintText:
+                                                                    'e.g., REQ-2025-11-00001',
+                                                                border:
+                                                                    OutlineInputBorder(),
+                                                                prefixIcon:
+                                                                    Icon(Icons
+                                                                        .search),
+                                                              ),
+                                                              onSubmitted:
+                                                                  (value) async {
+                                                                if (value
+                                                                    .trim()
                                                                     .isEmpty) {
-                                                                  setDialogState(
-                                                                      () {
-                                                                    errorMessage =
-                                                                        'Please enter a reference number';
-                                                                  });
                                                                   return;
                                                                 }
 
@@ -1376,7 +1383,7 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                                   final result =
                                                                       await _requestService
                                                                           .getRequestByRefNo(
-                                                                              refNo);
+                                                                              value.trim());
 
                                                                   setDialogState(
                                                                       () {
@@ -1397,68 +1404,97 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                                   });
                                                                 }
                                                               },
-                                                        child: isSearching
-                                                            ? const SizedBox(
-                                                                width: 20,
-                                                                height: 20,
-                                                                child:
-                                                                    CircularProgressIndicator(
-                                                                  strokeWidth:
-                                                                      2,
-                                                                ),
-                                                              )
-                                                            : const Text(
-                                                                'Search'),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 16),
-                                                  Expanded(
-                                                    child: isSearching
-                                                        ? const Center(
-                                                            child: Column(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .center,
-                                                              children: [
-                                                                CircularProgressIndicator(),
-                                                                SizedBox(
-                                                                    height: 16),
-                                                                Text(
-                                                                    'Searching...'),
-                                                              ],
                                                             ),
-                                                          )
-                                                        : errorMessage != null
-                                                            ? Center(
+                                                          ),
+                                                          const SizedBox(
+                                                              width: 8),
+                                                          ElevatedButton(
+                                                            onPressed:
+                                                                isSearching
+                                                                    ? null
+                                                                    : () async {
+                                                                        final refNo = searchController
+                                                                            .text
+                                                                            .trim();
+
+                                                                        if (refNo
+                                                                            .isEmpty) {
+                                                                          setDialogState(
+                                                                              () {
+                                                                            errorMessage =
+                                                                                'Please enter a reference number';
+                                                                          });
+                                                                          return;
+                                                                        }
+
+                                                                        setDialogState(
+                                                                            () {
+                                                                          isSearching =
+                                                                              true;
+                                                                          errorMessage =
+                                                                              null;
+                                                                          foundRequest =
+                                                                              null;
+                                                                        });
+
+                                                                        try {
+                                                                          final result =
+                                                                              await _requestService.getRequestByRefNo(refNo);
+
+                                                                          setDialogState(
+                                                                              () {
+                                                                            foundRequest =
+                                                                                result;
+                                                                            isSearching =
+                                                                                false;
+                                                                          });
+                                                                        } catch (e) {
+                                                                          setDialogState(
+                                                                              () {
+                                                                            errorMessage =
+                                                                                'Request not found. Please check the reference number.';
+                                                                            foundRequest =
+                                                                                null;
+                                                                            isSearching =
+                                                                                false;
+                                                                          });
+                                                                        }
+                                                                      },
+                                                            child: isSearching
+                                                                ? const SizedBox(
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    child:
+                                                                        CircularProgressIndicator(
+                                                                      strokeWidth:
+                                                                          2,
+                                                                    ),
+                                                                  )
+                                                                : const Text(
+                                                                    'Search'),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(
+                                                          height: 16),
+                                                      Expanded(
+                                                        child: isSearching
+                                                            ? const Center(
                                                                 child: Column(
                                                                   mainAxisAlignment:
                                                                       MainAxisAlignment
                                                                           .center,
                                                                   children: [
-                                                                    Icon(
-                                                                      Icons
-                                                                          .error_outline,
-                                                                      size: 48,
-                                                                      color: Colors
-                                                                          .red,
-                                                                    ),
-                                                                    const SizedBox(
+                                                                    CircularProgressIndicator(),
+                                                                    SizedBox(
                                                                         height:
                                                                             16),
                                                                     Text(
-                                                                      errorMessage!,
-                                                                      textAlign:
-                                                                          TextAlign
-                                                                              .center,
-                                                                      style: const TextStyle(
-                                                                          color:
-                                                                              Colors.red),
-                                                                    ),
+                                                                        'Searching...'),
                                                                   ],
                                                                 ),
                                                               )
-                                                            : foundRequest ==
+                                                            : errorMessage !=
                                                                     null
                                                                 ? Center(
                                                                     child:
@@ -1469,171 +1505,176 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                                       children: [
                                                                         Icon(
                                                                           Icons
-                                                                              .search,
+                                                                              .error_outline,
                                                                           size:
-                                                                              64,
+                                                                              48,
                                                                           color:
-                                                                              Colors.grey[400],
+                                                                              Colors.red,
                                                                         ),
                                                                         const SizedBox(
                                                                             height:
                                                                                 16),
                                                                         Text(
-                                                                          'Enter your reference number to check status',
-                                                                          style: TextStyle(
-                                                                              color: Colors.grey[600],
-                                                                              fontSize: 16),
+                                                                          errorMessage!,
+                                                                          textAlign:
+                                                                              TextAlign.center,
+                                                                          style:
+                                                                              const TextStyle(color: Colors.red),
                                                                         ),
                                                                       ],
                                                                     ),
                                                                   )
-                                                                : Card(
-                                                                    elevation:
-                                                                        2,
-                                                                    child:
-                                                                        Padding(
-                                                                      padding: const EdgeInsets
-                                                                          .all(
-                                                                          20.0),
-                                                                      child:
-                                                                          Column(
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment.start,
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.min,
-                                                                        children: [
-                                                                          const Text(
-                                                                            'Request Details',
-                                                                            style: TextStyle(
-                                                                                fontSize: 18,
-                                                                                fontWeight: FontWeight.bold,
-                                                                                color: green),
-                                                                          ),
-                                                                          const SizedBox(
-                                                                              height: 16),
-                                                                          _buildStatusRow(
-                                                                              'Reference Number',
-                                                                              foundRequest!['ref'] ?? '-'),
-                                                                          const SizedBox(
-                                                                              height: 12),
-                                                                          _buildStatusRow(
-                                                                              'Name',
-                                                                              _buildFullName(foundRequest!)),
-                                                                          const SizedBox(
-                                                                              height: 12),
-                                                                          const Text(
-                                                                            'Status:',
-                                                                            style: TextStyle(
-                                                                                fontSize: 14,
-                                                                                fontWeight: FontWeight.bold,
-                                                                                color: Colors.black87),
-                                                                          ),
-                                                                          const SizedBox(
-                                                                              height: 8),
-                                                                          Container(
-                                                                            padding:
-                                                                                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                                                            decoration:
-                                                                                BoxDecoration(
-                                                                              color: _getStatusColor(foundRequest!['status']),
-                                                                              borderRadius: BorderRadius.circular(20),
+                                                                : foundRequest ==
+                                                                        null
+                                                                    ? Center(
+                                                                        child:
+                                                                            Column(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Icon(
+                                                                              Icons.search,
+                                                                              size: 64,
+                                                                              color: Colors.grey[400],
                                                                             ),
-                                                                            child:
-                                                                                Text(
-                                                                              (foundRequest!['status'] ?? 'pending').toString().toUpperCase(),
-                                                                              style: const TextStyle(
-                                                                                color: Colors.white,
-                                                                                fontWeight: FontWeight.bold,
-                                                                                fontSize: 16,
+                                                                            const SizedBox(height: 16),
+                                                                            Text(
+                                                                              'Enter your reference number to check status',
+                                                                              style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      )
+                                                                    : Card(
+                                                                        elevation:
+                                                                            2,
+                                                                        child:
+                                                                            Padding(
+                                                                          padding: const EdgeInsets
+                                                                              .all(
+                                                                              20.0),
+                                                                          child:
+                                                                              Column(
+                                                                            crossAxisAlignment:
+                                                                                CrossAxisAlignment.start,
+                                                                            mainAxisSize:
+                                                                                MainAxisSize.min,
+                                                                            children: [
+                                                                              const Text(
+                                                                                'Request Details',
+                                                                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: green),
                                                                               ),
-                                                                            ),
-                                                                          ),
-                                                                          const SizedBox(
-                                                                              height: 16),
-                                                                          const Divider(),
-                                                                          const SizedBox(
-                                                                              height: 12),
-                                                                          Container(
-                                                                            padding:
-                                                                                const EdgeInsets.all(12),
-                                                                            decoration:
-                                                                                BoxDecoration(
-                                                                              color: _getStatusColor(foundRequest!['status']).withOpacity(0.1),
-                                                                              borderRadius: BorderRadius.circular(8),
-                                                                              border: Border.all(
-                                                                                color: _getStatusColor(foundRequest!['status']).withOpacity(0.3),
+                                                                              const SizedBox(height: 16),
+                                                                              _buildStatusRow('Reference Number', foundRequest!['ref'] ?? '-'),
+                                                                              const SizedBox(height: 12),
+                                                                              _buildStatusRow('Name', _buildFullName(foundRequest!)),
+                                                                              const SizedBox(height: 12),
+                                                                              const Text(
+                                                                                'Status:',
+                                                                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
                                                                               ),
-                                                                            ),
-                                                                            child:
-                                                                                Row(
-                                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                                              children: [
-                                                                                Icon(
-                                                                                  _getStatusIcon(foundRequest!['status']),
+                                                                              const SizedBox(height: 8),
+                                                                              Container(
+                                                                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                                                decoration: BoxDecoration(
                                                                                   color: _getStatusColor(foundRequest!['status']),
-                                                                                  size: 24,
+                                                                                  borderRadius: BorderRadius.circular(20),
                                                                                 ),
-                                                                                const SizedBox(width: 12),
-                                                                                Expanded(
-                                                                                  child: Text(
-                                                                                    _getStatusMessage(foundRequest!['status']),
-                                                                                    style: TextStyle(
-                                                                                      fontSize: 14,
-                                                                                      color: Colors.black87,
-                                                                                      height: 1.4,
-                                                                                    ),
+                                                                                child: Text(
+                                                                                  (foundRequest!['status'] ?? 'pending').toString().toUpperCase(),
+                                                                                  style: const TextStyle(
+                                                                                    color: Colors.white,
+                                                                                    fontWeight: FontWeight.bold,
+                                                                                    fontSize: 16,
                                                                                   ),
                                                                                 ),
-                                                                              ],
-                                                                            ),
+                                                                              ),
+                                                                              const SizedBox(height: 16),
+                                                                              const Divider(),
+                                                                              const SizedBox(height: 12),
+                                                                              Container(
+                                                                                padding: const EdgeInsets.all(12),
+                                                                                decoration: BoxDecoration(
+                                                                                  color: _getStatusColor(foundRequest!['status']).withOpacity(0.1),
+                                                                                  borderRadius: BorderRadius.circular(8),
+                                                                                  border: Border.all(
+                                                                                    color: _getStatusColor(foundRequest!['status']).withOpacity(0.3),
+                                                                                  ),
+                                                                                ),
+                                                                                child: Row(
+                                                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                                                  children: [
+                                                                                    Icon(
+                                                                                      _getStatusIcon(foundRequest!['status']),
+                                                                                      color: _getStatusColor(foundRequest!['status']),
+                                                                                      size: 24,
+                                                                                    ),
+                                                                                    const SizedBox(width: 12),
+                                                                                    Expanded(
+                                                                                      child: Text(
+                                                                                        _getStatusMessage(foundRequest!['status']),
+                                                                                        style: TextStyle(
+                                                                                          fontSize: 14,
+                                                                                          color: Colors.black87,
+                                                                                          height: 1.4,
+                                                                                        ),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
+                                                                              ),
+                                                                            ],
                                                                           ),
-                                                                        ],
+                                                                        ),
                                                                       ),
-                                                                    ),
-                                                                  ),
+                                                      ),
+                                                      const SizedBox(
+                                                          height: 12),
+                                                      Align(
+                                                        alignment: Alignment
+                                                            .centerRight,
+                                                        child: TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop(),
+                                                          child: const Text(
+                                                              'Close'),
+                                                        ),
+                                                      )
+                                                    ],
                                                   ),
-                                                  const SizedBox(height: 12),
-                                                  Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: TextButton(
-                                                      onPressed: () =>
-                                                          Navigator.of(context)
-                                                              .pop(),
-                                                      child:
-                                                          const Text('Close'),
-                                                    ),
-                                                  )
-                                                ],
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                        );
-                                      });
+                                            );
+                                          });
+                                        },
+                                      );
                                     },
-                                  );
-                                },
-                                icon: const Icon(Icons.search,
-                                    size: 26, color: Colors.white),
-                                label: const Padding(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 12.0),
-                                  child: Text('Check Request Status',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700)),
+                                    icon: const Icon(Icons.search,
+                                        size: 26, color: Colors.white),
+                                    label: const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 12.0),
+                                      child: Text('Check Request Status',
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w700)),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: green.withOpacity(0.92),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 18),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                    ),
+                                  ),
                                 ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: green.withOpacity(0.92),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 18),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                ),
-                              ),
-                            ),
-                          ],
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ],

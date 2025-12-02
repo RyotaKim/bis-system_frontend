@@ -28,7 +28,8 @@ class AnalyticsService {
   /// Get weekly complaints data for charts
   Future<List<dynamic>> getWeeklyComplaints() async {
     try {
-      final response = await _api.get(ApiConfig.weeklyComplaintsEndpoint);
+      final response =
+          await _api.get('${ApiConfig.analyticsEndpoint}/complaint-resolution');
       return response['data'] ?? response;
     } catch (e) {
       throw Exception('Failed to fetch weekly complaints: $e');
