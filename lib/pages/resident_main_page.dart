@@ -371,20 +371,6 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                             ),
                             child: _navText('About'),
                           ),
-                          const SizedBox(width: 36),
-                          TextButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('Contact page selected')),
-                              );
-                            },
-                            style: TextButton.styleFrom(
-                              padding: navPadding,
-                              textStyle: TextStyle(fontSize: navFontSize),
-                            ),
-                            child: _navText('Contact'),
-                          ),
                         ],
                       );
                     }),
@@ -598,6 +584,55 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
                                                             height: isMobile
                                                                 ? 8
                                                                 : 12),
+
+                                                        // Data Privacy Notice
+                                                        Container(
+                                                          padding: const EdgeInsets.all(12),
+                                                          decoration: BoxDecoration(
+                                                            color: const Color(0xFFE8F5E9),
+                                                            borderRadius: BorderRadius.circular(8),
+                                                            border: Border.all(
+                                                              color: const Color(0xFF2E7D32).withOpacity(0.3),
+                                                              width: 1,
+                                                            ),
+                                                          ),
+                                                          child: Row(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              const Icon(
+                                                                Icons.privacy_tip_outlined,
+                                                                color: Color(0xFF2E7D32),
+                                                                size: 20,
+                                                              ),
+                                                              const SizedBox(width: 10),
+                                                              Expanded(
+                                                                child: Column(
+                                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                                  children: [
+                                                                    Text(
+                                                                      'Data Privacy Notice',
+                                                                      style: TextStyle(
+                                                                        fontWeight: FontWeight.bold,
+                                                                        fontSize: isMobile ? 12 : 13,
+                                                                        color: const Color(0xFF2E7D32),
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(height: 4),
+                                                                    Text(
+                                                                      'Your personal information is protected under the Data Privacy Act of 2012 (RA 10173). All data collected will be used solely for processing your barangay document request and will be kept confidential and secure.',
+                                                                      style: TextStyle(
+                                                                        fontSize: isMobile ? 11 : 12,
+                                                                        color: Colors.black87,
+                                                                        height: 1.4,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        SizedBox(height: isMobile ? 12 : 16),
 
                                                         // Form area (scrollable)
                                                         Expanded(
