@@ -1,0 +1,7 @@
+{
+  "name": "bis-frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "vercel-build": "flutter build web --release --web-renderer html"
+  }
+}

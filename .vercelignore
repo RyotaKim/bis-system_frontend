@@ -1,0 +1,10 @@
+build/
+!build/web/
+.dart_tool/
+.packages
+android/
+ios/
+macos/
+linux/
+windows/
+test/
