@@ -2,7 +2,7 @@
 /// Contains all API endpoint configurations and constants
 class ApiConfig {
   // Base URL - Change this to your backend URL
-  static const String baseUrl = 'http://localhost:3000/api';
+  static const String baseUrl = 'https://bis-system-backend.onrender.com/api';
 
   // Auth endpoints
   static const String loginEndpoint = '/auth/login';

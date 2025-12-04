@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "buildCommand": "echo 'Build already done locally'",
+  "outputDirectory": "build/web",
   "routes": [
     {
       "src": "/(.*)",
