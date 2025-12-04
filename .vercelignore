@@ -1,5 +1,3 @@
-build/
-!build/web/
 .dart_tool/
 .packages
 android/
@@ -8,3 +6,8 @@ macos/
 linux/
 windows/
 test/
+lib/
+pubspec.yaml
+pubspec.lock
+analysis_options.yaml
+README.md
