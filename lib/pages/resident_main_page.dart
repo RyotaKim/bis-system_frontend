@@ -6,6 +6,7 @@ import 'login_page.dart'; // use the existing LoginPage instead of AdminLoginPag
 import 'resident_about_page.dart';
 import '../services/request_service.dart';
 import '../models/document_type_model.dart';
+import '../config/api_config.dart';
 
 // Converted to StatefulWidget (kept) — removed debug-only snack & flag.
 class ResidentMainPage extends StatefulWidget {
@@ -59,8 +60,8 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
     } catch (e) {
       // Don't show error for document types - we'll use fallback
       print('Could not load document types from backend: $e');
-      print(
-          'Using fallback document type mapping. Ensure backend is running at http://localhost:3000');
+        print(
+          'Using fallback document type mapping. Ensure backend is running at ${ApiConfig.baseUrl}');
     }
   }
 
@@ -1117,11 +1118,11 @@ class _ResidentMainPageState extends State<ResidentMainPage> {
 
                                                                             try {
                                                                               // Check if document types are loaded
-                                                                              if (_documentTypes.isEmpty) {
+                                                                                if (_documentTypes.isEmpty) {
                                                                                 if (context.mounted) {
                                                                                   ScaffoldMessenger.of(context).showSnackBar(
-                                                                                    const SnackBar(
-                                                                                      content: Text('Backend connection failed. Please ensure the backend server is running at http://localhost:3000'),
+                                                                                    SnackBar(
+                                                                                      content: Text('Backend connection failed. Please ensure the backend server is running at ${ApiConfig.baseUrl}'),
                                                                                       backgroundColor: Colors.red,
                                                                                       duration: Duration(seconds: 5),
                                                                                     ),

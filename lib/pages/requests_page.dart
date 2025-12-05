@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/request_model.dart';
 import '../models/document_type_model.dart';
 import '../services/request_service.dart';
+import '../config/api_config.dart';
 
 class RequestsPage extends StatefulWidget {
   const RequestsPage({super.key});
@@ -128,7 +129,7 @@ class _RequestsPageState extends State<RequestsPage> {
         if (errorMsg.contains('Cannot GET') || errorMsg.contains('Not Found')) {
           _errorMessage = 'Backend endpoint not found.\n\n'
               'Please verify:\n'
-              '1. Backend is running on http://localhost:3000\n'
+              '1. Backend is running on ${ApiConfig.baseUrl}\n'
               '2. Endpoint /api/admin/requests exists\n'
               '3. You are logged in as admin\n\n'
               'Error: $errorMsg';
@@ -541,8 +542,30 @@ class _RequestsPageState extends State<RequestsPage> {
     final docType = _documentTypes[request.docTypeId];
     final hasImage =
         request.idImageUrl != null && request.idImageUrl!.isNotEmpty;
-    final imageUrl =
-        hasImage ? 'http://localhost:3000${request.idImageUrl}' : null;
+
+    // Build a robust image URL:
+    // - If `idImageUrl` is already an absolute URL, use it.
+    // - If it starts with /api, prepend the host (strip /api from baseUrl to avoid double /api).
+    // - If it's a raw file id, use the `/files/{id}` endpoint on the API.
+    String? imageUrl;
+    if (hasImage) {
+      final raw = request.idImageUrl!;
+      if (raw.startsWith('http://') || raw.startsWith('https://')) {
+        imageUrl = raw;
+      } else if (raw.startsWith('/api/')) {
+        // path already includes /api — use host only (strip /api suffix from baseUrl)
+        final hostUrl = ApiConfig.baseUrl.replaceAll(RegExp(r'/api$'), '');
+        imageUrl = '$hostUrl$raw';
+      } else if (raw.startsWith('/')) {
+        // other absolute path — append to baseUrl
+        imageUrl = '${ApiConfig.baseUrl}$raw';
+      } else {
+        // treat as file id
+        imageUrl = '${ApiConfig.baseUrl}/files/$raw';
+      }
+    } else {
+      imageUrl = null;
+    }
 
     showDialog(
       context: context,
